@@ -2,8 +2,8 @@ public class Cliente extends Persona {
     private String zonaResidencia;
     private float deudaTotal;
 
-    public Cliente(String nombre, String numeroTelefono, String zonaResidencia, float deudaTotal) {
-        super(nombre, numeroTelefono);
+    public Cliente(String nombre, String numeroTelefono, String codigoPersona, String zonaResidencia, float deudaTotal) {
+        super(nombre, numeroTelefono, codigoPersona);
         this.zonaResidencia = zonaResidencia;
         this.deudaTotal = deudaTotal;
     }
@@ -26,8 +26,9 @@ public class Cliente extends Persona {
 
     @Override
     public void mostrarDatos(){
-        System.out.println("Nombre: " + get.Nombre());
-        System.out.println("Telefono: " + get.NumeroTelefono());
+        System.out.println("Nombre: " + getNombre());
+        System.out.println("Telefono: " + getNumeroTelefono());
+        System.out.println("Codigo: " + getCodigoPersona());
     }
 
     public void dinero(deudaFinal) {
