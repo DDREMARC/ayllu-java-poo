@@ -31,7 +31,4 @@ public abstract class Persona {
         System.out.println("Telefono: " + this.numeroTelefono);
     }
 
-    public float dinero(){
-        return 0;
-    }
 }
