@@ -1,10 +1,12 @@
 public abstract class Persona {
-    protected String nombre;
-    protected String numeroTelefono;
+    private String nombre;
+    private String numeroTelefono;
+    private String codidoPersona;
 
-    public Persona(String nombre, String numeroTelefono) {
+    public Persona(String nombre, String numeroTelefono, String codidoPersona) {
         this.nombre = nombre;
         this.numeroTelefono = numeroTelefono;
+        this.codidoPersona = codidoPersona;
     }
 
     public String getNombre() {
@@ -19,7 +21,15 @@ public abstract class Persona {
         return numeroTelefono;
     }
 
-    public abstract void mostrarDatos(){
+    public String getCodidoPersona() {
+        return codidoPersona;
+    }
+
+    public void setCodidoPersona(String codidoPersona) {
+        this.codidoPersona = codidoPersona;
+    }
+
+    public void mostrarDatos(){
         System.out.println("Nombre: " + this.nombre);
         System.out.println("Telefono: " + this.numeroTelefono);
     }

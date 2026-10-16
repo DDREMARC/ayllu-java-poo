@@ -1,6 +1,6 @@
 public class Cliente extends Persona {
     private String zonaResidencia;
-    public float deudaTotal;
+    private float deudaTotal;
 
     public Cliente(String nombre, String numeroTelefono, String zonaResidencia, float deudaTotal) {
         super(nombre, numeroTelefono);
