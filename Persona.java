@@ -27,11 +27,10 @@ public abstract class Persona {
 
     public abstract String obtenerResumen();
 
-    public String mostrarDatos(){
+    public void mostrarDatos(){
         System.out.println("Nombre: " + this.nombre);
         System.out.println("Telefono: " + this.numeroTelefono);
         System.out.println("Codigo: " + this.codigoPersona);
-        return mostrarDatos();
     }
 
 }
