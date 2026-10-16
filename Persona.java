@@ -25,10 +25,12 @@ public abstract class Persona {
         return codigoPersona;
     }
 
+    public abstract String obtenerResumen();
 
-    public abstract String mostrarDatos(){
+    public String mostrarDatos(){
         System.out.println("Nombre: " + this.nombre);
         System.out.println("Telefono: " + this.numeroTelefono);
+        System.out.println("Codido: " + this.codigoPersona);
     }
 
 }
