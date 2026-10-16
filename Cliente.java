@@ -26,8 +26,8 @@ public class Cliente extends Persona {
 
     @Override
     public void mostrarDatos(){
-        System.out.println("Nombre: " + this.nombre);
-        System.out.println("Telefono: " + this.numeroTelefono);
+        System.out.println("Nombre: " + get.Nombre());
+        System.out.println("Telefono: " + get.NumeroTelefono());
     }
 
     public void dinero(deudaFinal) {
