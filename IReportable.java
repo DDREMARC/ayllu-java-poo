@@ -1,4 +1,4 @@
-public interface Reportable {
+public interface IReportable {
     String reporteTexto();
     int reporteMontoMes();
 }
