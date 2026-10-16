@@ -8,22 +8,22 @@ public abstract class Persona {
         this.numeroTelefono = numeroTelefono;
         this.codigoPersona = codigoPersona;
     }
+    //==================================================================================================================
 
     public String getNombre() {
         return nombre;
     }
-
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-
     public String getNumeroTelefono() {
         return numeroTelefono;
     }
-
     public String getCodigoPersona() {
         return codigoPersona;
     }
+
+    //==================================================================================================================
 
     public abstract String obtenerResumen();
 
