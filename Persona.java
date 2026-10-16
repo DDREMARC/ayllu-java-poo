@@ -30,7 +30,8 @@ public abstract class Persona {
     public String mostrarDatos(){
         System.out.println("Nombre: " + this.nombre);
         System.out.println("Telefono: " + this.numeroTelefono);
-        System.out.println("Codido: " + this.codigoPersona);
+        System.out.println("Codigo: " + this.codigoPersona);
+        return mostrarDatos();
     }
 
 }
