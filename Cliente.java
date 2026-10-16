@@ -45,6 +45,6 @@ public class Cliente extends Persona {
         }
     }
     public boolean tieneDeuda(){
-        retur deudaTotal > 0;
+        return deudaTotal > 0;
     }
 }
