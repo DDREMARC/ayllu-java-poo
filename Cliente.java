@@ -31,20 +31,19 @@ public class Cliente extends Persona {
         System.out.println("Codigo: " + getCodigoPersona());
     }
 
-    public void dinero(deudaFinal) {
-        Scanner aumetarDeuda = new Scanner(System.in);
-        float duedaNueva = System.out.print("Monto de deuda: ")
-        float deudaNueva +deudaTotal = deudaFinal
-        return deudaFinal;
+    public void aumentarDeuda(float monto){
+        deudaTotal += monto;
     }
-    public void deudaPendiente(){
-        if(deudaTotal < 0){
-            System.out.println("Usted no tiene deuda pendiente");
-            break;
-        }
-        else {
-            this.dueudaFinal;
-            break;
+
+    public void reducirDeuda(float monto){
+        deudaTotal -= monto;
+        if (deudaTotal < 0){
+            deudaTotal = 0;
         }
     }
+
+    public void tieneDeuda(boolean true){
+        retur deudaTotal > 0;
+    }
+
 }
