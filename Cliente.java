@@ -8,18 +8,17 @@ public class Cliente extends Persona {
         this.deudaTotal = deudaTotal;
     }
 
+    //==================================================================================================================
+
     public String getZonaResidencia() {
         return zonaResidencia;
     }
-
     public void setZonaResidencia(String zonaResidencia) {
         this.zonaResidencia = zonaResidencia;
     }
-
     public float getDeudaTotal() {
         return deudaTotal;
     }
-
     public void setDeudaTotal(float deudaTotal) {
         this.deudaTotal = deudaTotal;
     }
@@ -30,20 +29,22 @@ public class Cliente extends Persona {
         System.out.println("Telefono: " + getNumeroTelefono());
         System.out.println("Codigo: " + getCodigoPersona());
     }
+    public String obtenerResumen(){
+        return "Cliente: " + getNombre() + " | Zona: " + zonaResidencia + " | Deuda: " + deudaTotal;
+    }
 
+
+    //==================================================================================================================
     public void aumentarDeuda(float monto){
         deudaTotal += monto;
     }
-
     public void reducirDeuda(float monto){
         deudaTotal -= monto;
         if (deudaTotal < 0){
             deudaTotal = 0;
         }
     }
-
-    public void tieneDeuda(boolean true){
+    public boolean tieneDeuda(){
         retur deudaTotal > 0;
     }
-
 }
