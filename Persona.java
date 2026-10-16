@@ -26,7 +26,7 @@ public abstract class Persona {
     }
 
 
-    public void mostrarDatos(){
+    public abstract String mostrarDatos(){
         System.out.println("Nombre: " + this.nombre);
         System.out.println("Telefono: " + this.numeroTelefono);
     }
