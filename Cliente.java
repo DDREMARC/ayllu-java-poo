@@ -28,6 +28,8 @@ public class Cliente extends Persona {
         System.out.println("Nombre: " + getNombre());
         System.out.println("Telefono: " + getNumeroTelefono());
         System.out.println("Codigo: " + getCodigoPersona());
+        System.out.println("Zona Residencia: " + getZonaResidencia());
+        System.out.println("Deuda Total: " + getDeudaTotal());
     }
     public String obtenerResumen(){
         return "Cliente: " + getNombre() + " | Zona: " + zonaResidencia + " | Deuda: " + deudaTotal;
