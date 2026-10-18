@@ -35,7 +35,7 @@ public class ConsolaMain {
                         System.out.print("Ingrese el distrito del cliente: ");
                         String zonaResidencia = scanner.nextLine();
                         System.out.print("Ingrese el deuda del cliente: ");
-                        float deudaTotal = scanner.nextFloat();
+                        double deudaTotal = scanner.nextDouble();
                         //==============================================================================================
                         clientes.add(new Cliente(nombre, numeroTelefono, codigoPersona, zonaResidencia, deudaTotal));
                         System.out.println("Registrado exitosamente...");
