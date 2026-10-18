@@ -116,16 +116,16 @@ classDiagram
 - [x] Un método **abstracto** `esIngreso()` que dice si es ingreso o no ✅ 2026-10-17
 
 ### 👷 `Empleado.java` (hija de `Persona`, implementa `IReportable`)
-- [ ] `extends Persona implements IReportable`
-- [ ] Atributos propios privados: `cargo`, `pagoPorDia`, `diasTrabajados`, `bono`
-- [ ] Constructor que llama a `super(...)`
-- [ ] Getters y setters
-- [ ] Método para registrar días (mayor que 0)
-- [ ] Método para asignar bono (no negativo)
-- [ ] Método que calcula el pago: días × pago por día + bono
-- [ ] `@Override` en `obtenerResumen()` (abstracto en `Persona`, **obligatorio**)
-- [ ] `@Override` en `String reporteTexto()`
-- [ ] `@Override` en `int reporteMontoMes()`
+- [x] `extends Persona implements IReportable` ✅ 2026-10-18
+- [x] Atributos propios privados: `cargo`, `pagoPorDia`, `diasTrabajados`, `bono` ✅ 2026-10-18
+- [x] Constructor que llama a `super(...)` ✅ 2026-10-18
+- [x] Getters y setters ✅ 2026-10-18
+- [x] Método para registrar días (mayor que 0) ✅ 2026-10-18
+- [x] Método para asignar bono (no negativo) ✅ 2026-10-18
+- [x] Método que calcula el pago: días × pago por día + bono ✅ 2026-10-18
+- [x] `@Override` en `obtenerResumen()` (abstracto en `Persona`, **obligatorio**) ✅ 2026-10-18
+- [x] `@Override` en `String reporteTexto()` ✅ 2026-10-18
+- [x] `@Override` en `int reporteMontoMes()` ✅ 2026-10-18
 
 ---
 
