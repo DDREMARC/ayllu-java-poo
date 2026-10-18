@@ -21,18 +21,19 @@ public class ConsolaMain {
             System.out.print("\nSeleccione una opción: ");
 
             opcion = scanner.nextInt();
+            scanner.nextLine();
 
             switch (opcion) {
                 case 1:
                         System.out.println("--- Registrar Cliente ---");
                         System.out.print("Ingrese nombre del cliente: ");
-                        String nombre = scanner.next();
+                        String nombre = scanner.nextLine();
                         System.out.print("Ingrese el telefono del cliente: ");
-                        String numeroTelefono = scanner.next();
+                        String numeroTelefono = scanner.nextLine();
                         System.out.print("Ingrese el codigo del cliente: ");
-                        String codigoPersona = scanner.next();
+                        String codigoPersona = scanner.nextLine();
                         System.out.print("Ingrese el distrito del cliente: ");
-                        String zonaResidencia = scanner.next();
+                        String zonaResidencia = scanner.nextLine();
                         System.out.print("Ingrese el deuda del cliente: ");
                         float deudaTotal = scanner.nextFloat();
                         //==============================================================================================

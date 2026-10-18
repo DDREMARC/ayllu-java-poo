@@ -4,8 +4,8 @@ public abstract class Persona {
     private String codigoPersona;
 
     public Persona(String nombre, String numeroTelefono, String codigoPersona) {
-        this.nombre = nombre;
-        this.numeroTelefono = numeroTelefono;
+        setNombre(nombre);
+        setNumeroTelefono(numeroTelefono);
         this.codigoPersona = codigoPersona;
     }
     //==================================================================================================================
@@ -14,10 +14,22 @@ public abstract class Persona {
         return nombre;
     }
     public void setNombre(String nombre) {
-        this.nombre = nombre;
+        if (nombre != null && !nombre.equals("")) {
+            this.nombre = nombre;
+        } else {
+            System.out.println("El nombre es obligatorio");
+        }
     }
     public String getNumeroTelefono() {
         return numeroTelefono;
+    }
+    public void setNumeroTelefono(String numeroTelefono) {
+        if (numeroTelefono != null && !numeroTelefono.equals("")) {
+            this.numeroTelefono = numeroTelefono;
+        } else  {
+            System.out.println("El telefono es obligatorio");
+        }
+
     }
     public String getCodigoPersona() {
         return codigoPersona;

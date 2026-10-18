@@ -1,11 +1,11 @@
 public class Cliente extends Persona {
     private String zonaResidencia;
-    private float deudaTotal;
+    private double deudaTotal;
 
-    public Cliente(String nombre, String numeroTelefono, String codigoPersona, String zonaResidencia, float deudaTotal) {
+    public Cliente(String nombre, String numeroTelefono, String codigoPersona, String zonaResidencia, double deudaTotal) {
         super(nombre, numeroTelefono, codigoPersona);
-        this.zonaResidencia = zonaResidencia;
-        this.deudaTotal = deudaTotal;
+        setZonaResidencia(zonaResidencia);
+        setDeudaTotal(deudaTotal);
     }
 
     //==================================================================================================================
@@ -14,13 +14,21 @@ public class Cliente extends Persona {
         return zonaResidencia;
     }
     public void setZonaResidencia(String zonaResidencia) {
-        this.zonaResidencia = zonaResidencia;
+        if (zonaResidencia != null && !zonaResidencia.equals("")) {
+            this.zonaResidencia = zonaResidencia;
+        } else {
+            System.out.println("Debe ingresar una zona residencia");
+        }
     }
-    public float getDeudaTotal() {
+    public double getDeudaTotal() {
         return deudaTotal;
     }
-    public void setDeudaTotal(float deudaTotal) {
-        this.deudaTotal = deudaTotal;
+    public void setDeudaTotal(double deudaTotal) {
+        if (deudaTotal >= 0) {
+            this.deudaTotal = deudaTotal;
+        } else  {
+            System.out.println("La deuda no debe ser negativo");
+        }
     }
 
     @Override
@@ -38,10 +46,10 @@ public class Cliente extends Persona {
 
 
     //==================================================================================================================
-    public void aumentarDeuda(float monto){
+    public void aumentarDeuda(double monto){
         deudaTotal += monto;
     }
-    public void reducirDeuda(float monto){
+    public void reducirDeuda(double monto){
         deudaTotal -= monto;
         if (deudaTotal < 0){
             deudaTotal = 0;
