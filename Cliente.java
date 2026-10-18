@@ -31,6 +31,7 @@ public class Cliente extends Persona {
         System.out.println("Zona Residencia: " + getZonaResidencia());
         System.out.println("Deuda Total: " + getDeudaTotal());
     }
+    @Override
     public String obtenerResumen(){
         return "Cliente: " + getNombre() + " | Zona: " + zonaResidencia + " | Deuda: " + deudaTotal;
     }

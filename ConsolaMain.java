@@ -1,7 +1,7 @@
 import java.util.Scanner;
 import java.util.ArrayList;
 
-public class MenuConsola {
+public class ConsolaMain {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         int opcion = 0;
