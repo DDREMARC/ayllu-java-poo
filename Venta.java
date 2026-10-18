@@ -1,12 +1,124 @@
-public class venta extends movimiento implements IReportable{
+import java.time.LocalDate;
+
+public class Venta extends Movimiento implements IReportable {
     private Cliente cliente;
-    private String cliente;
-    private double pesoKG;
-    private double precioKG;
-    private double montonPagado
-}
+    private double pesoKg;
+    private double precioKg;
+    private double montoPagado;
 
-public venta(int id , localDate fecha, String descripcion, cliente cliente, double pesoKG, double precio kg, double montoPagado){
-    super (id, fecha, descricion);
-}
+    public Venta(int id, LocalDate fecha, String descripcion, Cliente cliente, double pesoKg, double precioKg, double montoPagado) {
+        super(id, fecha, descripcion);
+        this.cliente = cliente;
 
+        if (pesoKg > 0) {
+            this.pesoKg = pesoKg;
+        }
+        if (precioKg > 0) {
+            this.precioKg = precioKg;
+        }
+
+        double total = calcularTotal();
+        if (montoPagado >= 0 && montoPagado <= total) {
+            this.montoPagado = montoPagado;
+        } else {
+            this.montoPagado = 0;
+        }
+
+        // Registrar la deuda inicial en el cliente si existe diferencia
+        double deudaInicial = total - this.montoPagado;
+        if (this.cliente != null && deudaInicial > 0) {
+            this.cliente.aumentarDeuda((float) deudaInicial);
+        }
+    }
+
+    // Getters y Setters
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public double getPesoKg() {
+        return pesoKg;
+    }
+
+    public void setPesoKg(double nuevoPeso) {
+        if (nuevoPeso > 0) {
+            actualizarDeudaCliente(() -> this.pesoKg = nuevoPeso);
+        }
+    }
+
+    public double getPrecioKg() {
+        return precioKg;
+    }
+
+    public void setPrecioKg(double nuevoPrecio) {
+        if (nuevoPrecio > 0) {
+            actualizarDeudaCliente(() -> this.precioKg = nuevoPrecio);
+        }
+    }
+
+    public double getMontoPagado() {
+        return montoPagado;
+    }
+
+    public void setMontoPagado(double montoPagado) {
+        double totalActual = calcularTotal();
+        if (montoPagado >= 0 && montoPagado <= totalActual) {
+            double diferencia = montoPagado - this.montoPagado;
+            this.montoPagado = montoPagado;
+            if (cliente != null) {
+                if (diferencia > 0) {
+                    cliente.reducirDeuda((float) diferencia);
+                } else if (diferencia < 0) {
+                    cliente.aumentarDeuda((float) -diferencia);
+                }
+            }
+        }
+    }
+
+    // Métodos de apoyo para actualizar deuda
+    public double calcularDeuda() {
+        return calcularTotal() - montoPagado;
+    }
+
+    private void actualizarDeudaCliente(Runnable cambioAccion) {
+        double deudaAnterior = calcularDeuda();
+        cambioAccion.run();
+        double nuevaDeuda = calcularDeuda();
+        double diferencia = nuevaDeuda - deudaAnterior;
+
+        if (cliente != null) {
+            if (diferencia > 0) {
+                cliente.aumentarDeuda((float) diferencia);
+            } else if (diferencia < 0) {
+                cliente.reducirDeuda((float) -diferencia);
+            }
+        }
+    }
+
+    // Implementación de métodos abstractos de Movimiento
+    @Override
+    public double calcularTotal() {
+        return pesoKg * precioKg;
+    }
+
+    @Override
+    public boolean esIngreso() {
+        return true;
+    }
+
+    // Implementación de métodos de la interfaz IReportable
+    @Override
+    public String reporteTexto() {
+        return "Venta realizada a " + (cliente != null ? cliente.getNombre() : "Sin cliente")
+                + " por un total de $" + calcularTotal();
+    }
+
+    @Override
+    public int reporteMontoMes() {
+        return (int) Math.round(calcularTotal());
+    }
+}
