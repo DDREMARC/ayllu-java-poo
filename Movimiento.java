@@ -43,7 +43,6 @@ public abstract class Movimiento {
 
     //metodo mostrar movimiento (info) cuando usemos el main
 
-
     public String mostrarMovimiento() {
         return "ID: " + id
                 + ", Fecha: " + fecha
@@ -53,6 +52,5 @@ public abstract class Movimiento {
     //metodos abstracto: Calculo
 
     public abstract double calcularTotal();
-
     public abstract boolean esIngreso();
 }
