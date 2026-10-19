@@ -13,11 +13,11 @@ public class Empleado extends Persona implements IReportable {
         // Envía los datos heredados al constructor de Persona
         super(nombre, numeroTelefono, codigoPersona);
 
-        // Guarda los datos propios del empleado
-        this.cargo=cargo;
-        this.pagoPorDia=pagoPorDia;
-        this.diasTrabajados=diasTrabajados;
-        this.bono=bono;
+        // Guarda los datos propios del empleado usando setters para validar
+        setCargo(cargo);
+        setPagoPorDia(pagoPorDia);
+        setDiasTrabajados(diasTrabajados);
+        setBono(bono);
     }
 
     // Métodos generales
@@ -71,6 +71,8 @@ public class Empleado extends Persona implements IReportable {
     public void setCargo(String cargo) {
         if (cargo != null && !cargo.equals("")) {
             this.cargo = cargo;
+        } else {
+            System.out.println("El cargo no puede estar vacío");
         }
     }
 
@@ -82,6 +84,8 @@ public class Empleado extends Persona implements IReportable {
     public void setPagoPorDia(double pagoPorDia) {
         if (pagoPorDia > 0) {
             this.pagoPorDia = pagoPorDia;
+        } else {
+            System.out.println("El pago por día debe ser mayor a cero");
         }
     }
 
@@ -93,6 +97,8 @@ public class Empleado extends Persona implements IReportable {
     public void setDiasTrabajados(int diasTrabajados) {
         if (diasTrabajados >= 0) {
             this.diasTrabajados = diasTrabajados;
+        } else {
+            System.out.println("Los días trabajados no pueden ser negativos");
         }
     }
 
@@ -104,6 +110,8 @@ public class Empleado extends Persona implements IReportable {
     public void setBono(double bono) {
         if (bono >= 0) {
             this.bono = bono;
+        } else {
+            System.out.println("El bono no puede ser negativo");
         }
     }
 }
