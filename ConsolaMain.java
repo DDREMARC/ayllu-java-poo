@@ -13,10 +13,11 @@ public class ConsolaMain {
             System.out.println("1. Registrar cliente");       //ANGEL
             System.out.println("2. Mostrar clientes");        //ANGEL
             System.out.println("3. Eliminar cliente");        //ANGEL
-            System.out.println("4. Registrar empleado");
-            System.out.println("5. Registrar venta");
-            System.out.println("6. Registrar gasto fijo");
-            System.out.println("7. Ver reportes");
+            System.out.println("4. Registrar empleado");     //DAN
+            System.out.println("5. Mostrar empleados");      //DAN
+            System.out.println("6. Registrar venta");
+            System.out.println("7. Registrar gasto fijo");
+            System.out.println("8. Ver reportes");
             System.out.println("0. Salir");                   //ANGEL
             System.out.print("\nSeleccione una opción: ");
 
@@ -49,15 +50,15 @@ public class ConsolaMain {
                         gestor.eliminarCliente(codigoEliminar);
                     break;
                 case 4:
-                    System.out.println("Saliendo del programa...");
+                    registrarEmpleados(scanner, gestor);
                     break;
-                 case 5:
-                     System.out.println("Saliendo del programa...");
-                     break;
+                case 5:
+                    gestor.mostrarEmpleados();
+                    break;
                  case 6:
                      System.out.println("Saliendo del programa...");
                      break;
-                 case 7:
+                 case 8:
                      System.out.println("Saliendo del programa...");
                      break;
                  case 0:
@@ -69,5 +70,34 @@ public class ConsolaMain {
         } while (opcion != 0);
 
         scanner.close();
+    }
+
+    // Registra un empleado y lo guarda en la lista
+    public static void registrarEmpleados(Scanner scanner, GestorNegocio gestor) {
+        System.out.println("--- Registrar empleado ---");
+        System.out.print("Ingrese nombre: ");
+        String nombre = scanner.next();
+        System.out.print("Ingrese telefono: ");
+        String numeroTelefono = scanner.next();
+        System.out.print("Ingrese codigo: ");
+        String codigoPersona = scanner.next();
+        System.out.print("Ingrese cargo: ");
+        String cargo = scanner.next();
+        System.out.print("Ingrese pago por dia: ");
+        double pagoPorDia = scanner.nextDouble();
+        System.out.print("Ingrese dias trabajados: ");
+        int diasTrabajados = scanner.nextInt();
+        System.out.print("Ingrese bono: ");
+        double bono = scanner.nextDouble();
+
+        gestor.registrarEmpleado(
+                nombre,
+                numeroTelefono,
+                codigoPersona,
+                cargo,
+                pagoPorDia,
+                diasTrabajados,
+                bono
+        );
     }
 }
