@@ -1,10 +1,10 @@
+import java.time.LocalDate;
 
-Gastofijo · JAVA
 public class GastoFijo extends Movimiento implements IReportable {
     private String tipo;
     private double monto;
 
-    public GastoFijo(int id, String fecha, String descripcion, String tipo, double monto) {
+    public GastoFijo(int id, LocalDate fecha, String descripcion, String tipo, double monto) {
         super(id, fecha, descripcion);
         setTipo(tipo);
         setMonto(monto);
@@ -66,7 +66,7 @@ public class GastoFijo extends Movimiento implements IReportable {
     // Implementación de métodos de la interfaz IReportable
     @Override
     public String reporteTexto() {
-        return "Gasto Fijo (" + tipo + "): " + getDescripcion() + " - Total: $" + monto;
+        return "Gasto Fijo (" + tipo + "): " + getDescripcion() + " - Total: S/ " + monto;
     }
 
     @Override
@@ -74,4 +74,3 @@ public class GastoFijo extends Movimiento implements IReportable {
         return (int) Math.round(monto);
     }
 }
-Claude terminó la respuesta

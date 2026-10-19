@@ -1,12 +1,12 @@
+import java.time.LocalDate;
 
-Venta · JAVA
 public class Venta extends Movimiento implements IReportable {
     private Cliente cliente;
     private double pesoKg;
     private double precioKg;
     private double montoPagado;
 
-    public Venta(int id, String fecha, String descripcion, Cliente cliente, double pesoKg, double precioKg, double montoPagado) {
+    public Venta(int id, LocalDate fecha, String descripcion, Cliente cliente, double pesoKg, double precioKg, double montoPagado) {
         super(id, fecha, descripcion);
         this.cliente = cliente;
 
@@ -48,16 +48,7 @@ public class Venta extends Movimiento implements IReportable {
         if (nuevoPeso > 0) {
             double deudaAnterior = calcularDeuda();
             this.pesoKg = nuevoPeso;
-            double nuevaDeuda = calcularDeuda();
-            double diferencia = nuevaDeuda - deudaAnterior;
-
-            if (cliente != null) {
-                if (diferencia > 0) {
-                    cliente.aumentarDeuda(diferencia);
-                } else if (diferencia < 0) {
-                    cliente.reducirDeuda(-diferencia);
-                }
-            }
+            corregirDeudaCliente(deudaAnterior);
         }
     }
 
@@ -69,16 +60,7 @@ public class Venta extends Movimiento implements IReportable {
         if (nuevoPrecio > 0) {
             double deudaAnterior = calcularDeuda();
             this.precioKg = nuevoPrecio;
-            double nuevaDeuda = calcularDeuda();
-            double diferencia = nuevaDeuda - deudaAnterior;
-
-            if (cliente != null) {
-                if (diferencia > 0) {
-                    cliente.aumentarDeuda(diferencia);
-                } else if (diferencia < 0) {
-                    cliente.reducirDeuda(-diferencia);
-                }
-            }
+            corregirDeudaCliente(deudaAnterior);
         }
     }
 
@@ -97,6 +79,18 @@ public class Venta extends Movimiento implements IReportable {
                 } else if (diferencia < 0) {
                     cliente.aumentarDeuda(-diferencia);
                 }
+            }
+        }
+    }
+
+    // Compara la deuda de antes con la de ahora y ajusta la deuda del cliente
+    private void corregirDeudaCliente(double deudaAnterior) {
+        double diferencia = calcularDeuda() - deudaAnterior;
+        if (cliente != null) {
+            if (diferencia > 0) {
+                cliente.aumentarDeuda(diferencia);
+            } else if (diferencia < 0) {
+                cliente.reducirDeuda(-diferencia);
             }
         }
     }
@@ -126,7 +120,7 @@ public class Venta extends Movimiento implements IReportable {
         } else {
             nombreCliente = "Sin cliente";
         }
-        return "Venta realizada a " + nombreCliente + " por un total de $" + calcularTotal();
+        return "Venta realizada a " + nombreCliente + " por un total de S/ " + calcularTotal();
     }
 
     @Override
@@ -134,4 +128,3 @@ public class Venta extends Movimiento implements IReportable {
         return (int) Math.round(calcularTotal());
     }
 }
-Claude terminó la respuesta

@@ -34,7 +34,7 @@ public class Empleado extends Persona implements IReportable {
     // Devuelve el pago mensual como número entero
     @Override
     public int reporteMontoMes() {
-        return (int) calcularPago();
+        return (int) Math.round(calcularPago());
     }
 
     // Implementa el método abstracto de Persona
@@ -53,9 +53,7 @@ public class Empleado extends Persona implements IReportable {
 
     // Cambia el bono si no es negativo
     public void asignarBono(double bono) {
-        if (bono >= 0) {
-            this.bono = bono;
-        }
+        setBono(bono);
     }
 
     // Calcula: días trabajados por pago diario más bono

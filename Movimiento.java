@@ -1,15 +1,15 @@
+import java.time.LocalDate;
 
-Movimiento · JAVA
 //Movimiento representa cualquier operación o transaccion economica que tenga que ver con el flujo de caja(dinero) del negocio
 
 public abstract class Movimiento {
     private int id;
-    private String fecha;
+    private LocalDate fecha;
     private String descripcion;
 
     //constructor
 
-    public Movimiento(int id, String fecha, String descripcion) {
+    public Movimiento(int id, LocalDate fecha, String descripcion) {
         setId(id);
         setFecha(fecha);
         setDescripcion(descripcion);
@@ -18,7 +18,7 @@ public abstract class Movimiento {
     //getters para obtener los valores debido al encapsulamiento
 
     public int getId() {return id;}
-    public String getFecha() {return fecha;}
+    public LocalDate getFecha() {return fecha;}
     public String getDescripcion() {return descripcion;}
 
     //setters básicos parametrando atributos para evitar errores
@@ -26,18 +26,24 @@ public abstract class Movimiento {
     public void setId(int id) {
         if (id > 0) {
             this.id = id;
+        } else {
+            System.out.println("El id debe ser mayor a cero");
         }
     }
 
-    public void setFecha(String fecha) {
-        if (fecha != null && !fecha.equals("")) {
+    public void setFecha(LocalDate fecha) {
+        if (fecha != null) {
             this.fecha = fecha;
+        } else {
+            System.out.println("La fecha es obligatoria");
         }
     }
 
     public void setDescripcion(String descripcion) {
         if (descripcion != null && !descripcion.equals("")) {
             this.descripcion = descripcion;
+        } else {
+            System.out.println("La descripcion es obligatoria");
         }
     }
 
@@ -54,5 +60,3 @@ public abstract class Movimiento {
     public abstract double calcularTotal();
     public abstract boolean esIngreso();
 }
-
-Claude terminó la respuesta

@@ -1,5 +1,4 @@
-
-Gestornegocio · JAVA
+import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class GestorNegocio {
@@ -48,6 +47,12 @@ public class GestorNegocio {
         if (encontrado == null) {
             System.out.println("No se encontró el cliente");
         } else {
+            // Las ventas que tenían a este cliente quedan sin cliente
+            for (Venta venta : ventas) {
+                if (venta.getCliente() == encontrado) {
+                    venta.setCliente(null);
+                }
+            }
             clientes.remove(encontrado);
             System.out.println("Cliente eliminado");
         }
@@ -57,13 +62,39 @@ public class GestorNegocio {
     // DAN: Empleados
     //==================================================================================================================
 
-    // Registra un empleado en la lista
+    public Empleado buscarEmpleado(String codigo) {
+        for (Empleado empleado : empleados) {
+            if (empleado.getCodigoPersona().equals(codigo)) {
+                return empleado;
+            }
+        }
+        return null;
+    }
+
+    // Registra un empleado en la lista (solo si los datos son válidos)
     public void registrarEmpleado(String nombre, String telefono, String codigo,
                                   String cargo, double pagoPorDia,
                                   int diasTrabajados, double bono) {
-        empleados.add(new Empleado(nombre, telefono, codigo, cargo,
-                pagoPorDia, diasTrabajados, bono));
-        System.out.println("Empleado registrado");
+        if (nombre.equals("") || telefono.equals("") || codigo.equals("") || cargo.equals("")
+                || pagoPorDia <= 0 || diasTrabajados < 0 || bono < 0) {
+            System.out.println("Error: Datos incompletos o inválidos");
+        } else if (buscarEmpleado(codigo) != null) {
+            System.out.println("Error: Empleado ya existe");
+        } else {
+            empleados.add(new Empleado(nombre, telefono, codigo, cargo,
+                    pagoPorDia, diasTrabajados, bono));
+            System.out.println("Empleado registrado");
+        }
+    }
+
+    public void eliminarEmpleado(String codigo) {
+        Empleado encontrado = buscarEmpleado(codigo);
+        if (encontrado == null) {
+            System.out.println("No se encontró el empleado");
+        } else {
+            empleados.remove(encontrado);
+            System.out.println("Empleado eliminado");
+        }
     }
 
     // Muestra los empleados registrados
@@ -90,9 +121,9 @@ public class GestorNegocio {
         return null;
     }
 
-    // Registra una venta. Busca al cliente por código y rechaza la venta si no existe.
-    public void registrarVenta(String descripcion, String fecha, String codigoCliente, double pesoKg, double precioKg, double montoPagado) {
-        if (descripcion.equals("") || fecha.equals("") || pesoKg <= 0 || precioKg <= 0 || montoPagado < 0) {
+    // Registra una venta. Busca al cliente por código (si se indica) y avisa si no existe.
+    public void registrarVenta(String descripcion, String codigoCliente, double pesoKg, double precioKg, double montoPagado) {
+        if (descripcion.equals("") || pesoKg <= 0 || precioKg <= 0 || montoPagado < 0) {
             System.out.println("Error: Datos incompletos o inválidos");
             return;
         }
@@ -107,12 +138,11 @@ public class GestorNegocio {
         if (!codigoCliente.equals("")) {
             cliente = buscarCliente(codigoCliente);
             if (cliente == null) {
-                System.out.println("Error: No existe un cliente con ese código. Venta no registrada");
-                return;
+                System.out.println("Cliente no encontrado, la venta se registrará sin cliente asociado");
             }
         }
 
-        Venta venta = new Venta(siguienteIdVenta, fecha, descripcion, cliente, pesoKg, precioKg, montoPagado);
+        Venta venta = new Venta(siguienteIdVenta, LocalDate.now(), descripcion, cliente, pesoKg, precioKg, montoPagado);
         ventas.add(venta);
         siguienteIdVenta = siguienteIdVenta + 1;
         System.out.println("Venta registrada");
@@ -123,7 +153,7 @@ public class GestorNegocio {
             System.out.println("No hay ventas registradas...");
         } else {
             for (Venta venta : ventas) {
-                System.out.println("ID: " + venta.getId() + " | " + venta.reporteTexto());
+                System.out.println(venta.reporteTexto());
             }
         }
     }
@@ -135,6 +165,8 @@ public class GestorNegocio {
             System.out.println("No se encontró la venta");
         } else if (nuevoMontoPagado < 0) {
             System.out.println("Error: El monto pagado no debe ser negativo");
+        } else if (nuevoMontoPagado > encontrada.calcularTotal()) {
+            System.out.println("Error: El monto pagado no puede ser mayor al total de la venta");
         } else {
             encontrada.setMontoPagado(nuevoMontoPagado);
             System.out.println("Venta modificada");
@@ -146,6 +178,10 @@ public class GestorNegocio {
         if (encontrada == null) {
             System.out.println("No se encontró la venta");
         } else {
+            // La deuda de esta venta ya no cuenta para el cliente
+            if (encontrada.getCliente() != null) {
+                encontrada.getCliente().reducirDeuda(encontrada.calcularDeuda());
+            }
             ventas.remove(encontrada);
             System.out.println("Venta eliminada");
         }
@@ -160,33 +196,19 @@ public class GestorNegocio {
         return null;
     }
 
-    // Compara el tipo con los tipos válidos antes de crear el gasto
-    private boolean esTipoValido(String tipo) {
-        String tipoNormalizado = tipo.toLowerCase().trim();
-
-        if (tipoNormalizado.equals("implementos")) {
-            return true;
-        } else if (tipoNormalizado.equals("combustible y peajes")) {
-            return true;
-        } else if (tipoNormalizado.equals("agua y gas")) {
-            return true;
-        } else if (tipoNormalizado.equals("otros")) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void registrarGasto(String descripcion, String fecha, String tipo, double monto) {
-        if (descripcion.equals("") || fecha.equals("") || tipo.equals("") || monto < 0) {
+    public void registrarGasto(String descripcion, String tipo, double monto) {
+        if (descripcion.equals("") || tipo.equals("") || monto <= 0) {
             System.out.println("Error: Datos incompletos o inválidos");
-        } else if (!esTipoValido(tipo)) {
-            System.out.println("Error: Tipo de gasto no válido. Tipos permitidos: implementos, combustible y peajes, agua y gas, otros. Gasto no registrado");
         } else {
-            GastoFijo gasto = new GastoFijo(siguienteIdGasto, fecha, descripcion, tipo, monto);
-            gastos.add(gasto);
-            siguienteIdGasto = siguienteIdGasto + 1;
-            System.out.println("Gasto fijo registrado");
+            GastoFijo gasto = new GastoFijo(siguienteIdGasto, LocalDate.now(), descripcion, tipo, monto);
+            // Si el tipo no era válido, GastoFijo lo deja en null: no se guarda
+            if (gasto.getTipo() == null) {
+                System.out.println("Error: El gasto no se registró");
+            } else {
+                gastos.add(gasto);
+                siguienteIdGasto = siguienteIdGasto + 1;
+                System.out.println("Gasto fijo registrado");
+            }
         }
     }
 
@@ -195,7 +217,7 @@ public class GestorNegocio {
             System.out.println("No hay gastos registrados...");
         } else {
             for (GastoFijo gasto : gastos) {
-                System.out.println("ID: " + gasto.getId() + " | " + gasto.reporteTexto());
+                System.out.println(gasto.reporteTexto());
             }
         }
     }
@@ -204,6 +226,8 @@ public class GestorNegocio {
         GastoFijo encontrado = buscarGasto(id);
         if (encontrado == null) {
             System.out.println("No se encontró el gasto");
+        } else if (nuevoMonto <= 0) {
+            System.out.println("Error: El monto debe ser mayor a cero");
         } else {
             encontrado.setMonto(nuevoMonto);
             System.out.println("Gasto modificado");
@@ -219,6 +243,88 @@ public class GestorNegocio {
             System.out.println("Gasto eliminado");
         }
     }
-}
 
-Claude terminó la respuesta
+    //==================================================================================================================
+    // LOS 3: Polimorfismo y Reportes
+    //==================================================================================================================
+
+    // Una lista de tipo Persona (clientes y empleados) y otra de tipo Movimiento (ventas y gastos)
+    public void mostrarPersonasYMovimientos() {
+        ArrayList<Persona> personas = new ArrayList<>();
+        for (Cliente cliente : clientes) {
+            personas.add(cliente);
+        }
+        for (Empleado empleado : empleados) {
+            personas.add(empleado);
+        }
+
+        ArrayList<Movimiento> movimientos = new ArrayList<>();
+        for (Venta venta : ventas) {
+            movimientos.add(venta);
+        }
+        for (GastoFijo gasto : gastos) {
+            movimientos.add(gasto);
+        }
+
+        System.out.println("--- Personas ---");
+        if (personas.isEmpty()) {
+            System.out.println("No hay personas registradas...");
+        } else {
+            for (Persona persona : personas) {
+                System.out.println(persona.obtenerResumen());
+            }
+        }
+
+        System.out.println("--- Movimientos ---");
+        if (movimientos.isEmpty()) {
+            System.out.println("No hay movimientos registrados...");
+        } else {
+            for (Movimiento movimiento : movimientos) {
+                System.out.println(movimiento.mostrarMovimiento() + " | Total: S/ " + movimiento.calcularTotal());
+            }
+        }
+    }
+
+    // Reporte general: lista de tipo IReportable con empleados, ventas y gastos
+    public void mostrarReportes() {
+        ArrayList<IReportable> reportables = new ArrayList<>();
+        for (Empleado empleado : empleados) {
+            reportables.add(empleado);
+        }
+        for (Venta venta : ventas) {
+            reportables.add(venta);
+        }
+        for (GastoFijo gasto : gastos) {
+            reportables.add(gasto);
+        }
+
+        if (reportables.isEmpty()) {
+            System.out.println("No hay datos para el reporte...");
+            return;
+        }
+
+        System.out.println("--- REPORTE DEL MES ---");
+        for (IReportable reportable : reportables) {
+            System.out.println(reportable.reporteTexto());
+        }
+
+        // Cada tipo se suma por separado: las ventas entran y los gastos y sueldos salen
+        int totalVentas = 0;
+        for (Venta venta : ventas) {
+            totalVentas = totalVentas + venta.reporteMontoMes();
+        }
+        int totalGastos = 0;
+        for (GastoFijo gasto : gastos) {
+            totalGastos = totalGastos + gasto.reporteMontoMes();
+        }
+        int totalSueldos = 0;
+        for (Empleado empleado : empleados) {
+            totalSueldos = totalSueldos + empleado.reporteMontoMes();
+        }
+
+        System.out.println("Ingresos por ventas: S/ " + totalVentas);
+        System.out.println("Gastos fijos: S/ " + totalGastos);
+        System.out.println("Pago al personal: S/ " + totalSueldos);
+        System.out.println("Ganancia del mes: S/ " + (totalVentas - totalGastos - totalSueldos));
+    }
+}

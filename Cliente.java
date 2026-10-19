@@ -1,61 +1,48 @@
-public class Cliente extends Persona {
-    private String zonaResidencia;
-    private double deudaTotal;
+public abstract class Persona {
+    private String nombre;
+    private String numeroTelefono;
+    private String codigoPersona;
 
-    public Cliente(String nombre, String numeroTelefono, String codigoPersona, String zonaResidencia, double deudaTotal) {
-        super(nombre, numeroTelefono, codigoPersona);
-        setZonaResidencia(zonaResidencia);
-        setDeudaTotal(deudaTotal);
+    public Persona(String nombre, String numeroTelefono, String codigoPersona) {
+        setNombre(nombre);
+        setNumeroTelefono(numeroTelefono);
+        this.codigoPersona = codigoPersona;
+    }
+    //==================================================================================================================
+
+    public String getNombre() {
+        return nombre;
+    }
+    public void setNombre(String nombre) {
+        if (nombre != null && !nombre.equals("")) {
+            this.nombre = nombre;
+        } else {
+            System.out.println("El nombre es obligatorio");
+        }
+    }
+    public String getNumeroTelefono() {
+        return numeroTelefono;
+    }
+    public void setNumeroTelefono(String numeroTelefono) {
+        if (numeroTelefono != null && !numeroTelefono.equals("")) {
+            this.numeroTelefono = numeroTelefono;
+        } else  {
+            System.out.println("El telefono es obligatorio");
+        }
+
+    }
+    public String getCodigoPersona() {
+        return codigoPersona;
     }
 
     //==================================================================================================================
 
-    public String getZonaResidencia() {
-        return zonaResidencia;
-    }
-    public void setZonaResidencia(String zonaResidencia) {
-        if (zonaResidencia != null && !zonaResidencia.equals("")) {
-            this.zonaResidencia = zonaResidencia;
-        } else {
-            System.out.println("Debe ingresar una zona residencia");
-        }
-    }
-    public double getDeudaTotal() {
-        return deudaTotal;
-    }
-    public void setDeudaTotal(double deudaTotal) {
-        if (deudaTotal >= 0) {
-            this.deudaTotal = deudaTotal;
-        } else  {
-            System.out.println("La deuda no debe ser negativo");
-        }
-    }
+    public abstract String obtenerResumen();
 
-    @Override
     public void mostrarDatos(){
         System.out.println("Nombre: " + getNombre());
         System.out.println("Telefono: " + getNumeroTelefono());
         System.out.println("Codigo: " + getCodigoPersona());
-        System.out.println("Zona Residencia: " + getZonaResidencia());
-        System.out.println("Deuda Total: " + getDeudaTotal());
-    }
-    @Override
-    public String obtenerResumen(){
-        return "Cliente: " + getNombre() + " | Zona: " + zonaResidencia + " | Deuda: " + deudaTotal;
     }
 
-
-    //==================================================================================================================
-    public void aumentarDeuda(double monto){
-        deudaTotal += monto;
-    }
-    public void reducirDeuda(double monto){
-        deudaTotal -= monto;
-        if (deudaTotal < 0){
-            deudaTotal = 0;
-        }
-    }
-    public boolean tieneDeuda(){
-        return deudaTotal > 0;
-    }
 }
