@@ -1,5 +1,4 @@
 import java.util.Scanner;
-import java.util.ArrayList;
 
 public class ConsolaMain {
     public static void main(String[] args) {
@@ -12,11 +11,12 @@ public class ConsolaMain {
         do {
             System.out.println("--- MENÚ PRINCIPAL ---");
             System.out.println("1. Registrar cliente");       //ANGEL
-            System.out.println("2. Mostrar cliente");         //ANGEL
-            System.out.println("3. Registrar empleado");
-            System.out.println("4. Registrar venta");
-            System.out.println("5. Registrar gasto fijo");
-            System.out.println("6. Ver reportes");
+            System.out.println("2. Mostrar clientes");        //ANGEL
+            System.out.println("3. Eliminar cliente");        //ANGEL
+            System.out.println("4. Registrar empleado");
+            System.out.println("5. Registrar venta");
+            System.out.println("6. Registrar gasto fijo");
+            System.out.println("7. Ver reportes");
             System.out.println("0. Salir");                   //ANGEL
             System.out.print("\nSeleccione una opción: ");
 
@@ -34,27 +34,30 @@ public class ConsolaMain {
                         String codigoPersona = scanner.nextLine();
                         System.out.print("Ingrese el distrito del cliente: ");
                         String zonaResidencia = scanner.nextLine();
-                        System.out.print("Ingrese el deuda del cliente: ");
+                        System.out.print("Ingrese la deuda del cliente: ");
                         double deudaTotal = scanner.nextDouble();
-                        //==============================================================================================
-                        gestor.registrarClientes(new Cliente(nombre, numeroTelefono, codigoPersona, zonaResidencia, deudaTotal));
-                        System.out.println("Registrado exitosamente...");
-                        System.out.println(" ");
-
+                        scanner.nextLine();
+                        gestor.registrarCliente(nombre, numeroTelefono, codigoPersona, zonaResidencia, deudaTotal);
                    break;
                 case 2:
                    gestor.mostrarClientes();
                     break;
                 case 3:
+                        System.out.println("--- Eliminar Cliente ---");
+                        System.out.print("Ingrese el codigo del cliente a eliminar: ");
+                        String codigoEliminar = scanner.nextLine();
+                        gestor.eliminarCliente(codigoEliminar);
+                    break;
+                case 4:
                     System.out.println("Saliendo del programa...");
                     break;
-                 case 4:
-                     System.out.println("Saliendo del programa...");
-                     break;
                  case 5:
                      System.out.println("Saliendo del programa...");
                      break;
                  case 6:
+                     System.out.println("Saliendo del programa...");
+                     break;
+                 case 7:
                      System.out.println("Saliendo del programa...");
                      break;
                  case 0:
