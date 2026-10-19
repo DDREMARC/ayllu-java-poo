@@ -21,7 +21,7 @@ Por último, `GestorNegocio` guarda las listas de clientes, empleados, ventas y 
 
 ## 📐 Diseño de clases
 
-![Diagrama de clases UML](UML-Lab9.png)
+![Diagrama de clases UML](entrega/UML-Lab9.png)
 
 | Tipo | Clases |
 |---|---|
@@ -45,11 +45,14 @@ El menú tiene 17 opciones más la de salir: registrar, mostrar, buscar, modific
 
 ## 📦 Archivos de entrega
 
+Están en la carpeta **`entrega/`**. Es lo único que se le envía al profesor.
+
 | Archivo | Qué es |
 |---|---|
-| `Lab9-ClasesAbstractas-ENTREGA.txt` | Descripción del problema + código fuente completo (lo que se envía al profesor) |
-| `UML-Lab9.png` | Diagrama de clases UML |
-| `*.java` | Las 9 clases del programa |
+| `entrega/Lab9-ClasesAbstractas-ENTREGA.txt` | Descripción del problema + código fuente completo |
+| `entrega/UML-Lab9.png` | Diagrama de clases UML |
+
+Los archivos `*.java` de la raíz son el programa en sí, para trabajarlo y ejecutarlo.
 
 ---
 
