@@ -1,18 +1,8 @@
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
 
 public class GastoFijo extends Movimiento implements IReportable {
     private String tipo;
     private double monto;
-
-    // Lista de tipos válidos según la especificación
-    private static final List<String> TIPOS_VALIDOS = Arrays.asList(
-            "implementos",
-            "combustible y peajes",
-            "agua y gas",
-            "otros"
-    );
 
     public GastoFijo(int id, LocalDate fecha, String descripcion, String tipo, double monto) {
         super(id, fecha, descripcion);
@@ -26,10 +16,27 @@ public class GastoFijo extends Movimiento implements IReportable {
     }
 
     public void setTipo(String tipo) {
-        if (tipo != null && TIPOS_VALIDOS.contains(tipo.toLowerCase().trim())) {
+        if (tipo != null && esTipoValido(tipo)) {
             this.tipo = tipo.toLowerCase().trim();
         } else {
-            throw new IllegalArgumentException("Tipo de gasto no válido. Tipos permitidos: " + TIPOS_VALIDOS);
+            System.out.println("Tipo de gasto no válido. Tipos permitidos: implementos, combustible y peajes, agua y gas, otros");
+        }
+    }
+
+    // Compara el tipo ingresado con los tipos válidos usando equals()
+    private boolean esTipoValido(String tipo) {
+        String tipoNormalizado = tipo.toLowerCase().trim();
+
+        if (tipoNormalizado.equals("implementos")) {
+            return true;
+        } else if (tipoNormalizado.equals("combustible y peajes")) {
+            return true;
+        } else if (tipoNormalizado.equals("agua y gas")) {
+            return true;
+        } else if (tipoNormalizado.equals("otros")) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -40,6 +47,8 @@ public class GastoFijo extends Movimiento implements IReportable {
     public void setMonto(double monto) {
         if (monto >= 0) {
             this.monto = monto;
+        } else {
+            System.out.println("El monto no debe ser negativo");
         }
     }
 

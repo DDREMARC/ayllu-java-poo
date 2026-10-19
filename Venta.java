@@ -27,7 +27,7 @@ public class Venta extends Movimiento implements IReportable {
         // Registrar la deuda inicial en el cliente si existe diferencia
         double deudaInicial = total - this.montoPagado;
         if (this.cliente != null && deudaInicial > 0) {
-            this.cliente.aumentarDeuda((float) deudaInicial);
+            this.cliente.aumentarDeuda(deudaInicial);
         }
     }
 
@@ -46,7 +46,18 @@ public class Venta extends Movimiento implements IReportable {
 
     public void setPesoKg(double nuevoPeso) {
         if (nuevoPeso > 0) {
-            actualizarDeudaCliente(() -> this.pesoKg = nuevoPeso);
+            double deudaAnterior = calcularDeuda();
+            this.pesoKg = nuevoPeso;
+            double nuevaDeuda = calcularDeuda();
+            double diferencia = nuevaDeuda - deudaAnterior;
+
+            if (cliente != null) {
+                if (diferencia > 0) {
+                    cliente.aumentarDeuda(diferencia);
+                } else if (diferencia < 0) {
+                    cliente.reducirDeuda(-diferencia);
+                }
+            }
         }
     }
 
@@ -56,7 +67,18 @@ public class Venta extends Movimiento implements IReportable {
 
     public void setPrecioKg(double nuevoPrecio) {
         if (nuevoPrecio > 0) {
-            actualizarDeudaCliente(() -> this.precioKg = nuevoPrecio);
+            double deudaAnterior = calcularDeuda();
+            this.precioKg = nuevoPrecio;
+            double nuevaDeuda = calcularDeuda();
+            double diferencia = nuevaDeuda - deudaAnterior;
+
+            if (cliente != null) {
+                if (diferencia > 0) {
+                    cliente.aumentarDeuda(diferencia);
+                } else if (diferencia < 0) {
+                    cliente.reducirDeuda(-diferencia);
+                }
+            }
         }
     }
 
@@ -71,32 +93,17 @@ public class Venta extends Movimiento implements IReportable {
             this.montoPagado = montoPagado;
             if (cliente != null) {
                 if (diferencia > 0) {
-                    cliente.reducirDeuda((float) diferencia);
+                    cliente.reducirDeuda(diferencia);
                 } else if (diferencia < 0) {
-                    cliente.aumentarDeuda((float) -diferencia);
+                    cliente.aumentarDeuda(-diferencia);
                 }
             }
         }
     }
 
-    // Métodos de apoyo para actualizar deuda
+    // Métodos de apoyo para calcular deuda
     public double calcularDeuda() {
         return calcularTotal() - montoPagado;
-    }
-
-    private void actualizarDeudaCliente(Runnable cambioAccion) {
-        double deudaAnterior = calcularDeuda();
-        cambioAccion.run();
-        double nuevaDeuda = calcularDeuda();
-        double diferencia = nuevaDeuda - deudaAnterior;
-
-        if (cliente != null) {
-            if (diferencia > 0) {
-                cliente.aumentarDeuda((float) diferencia);
-            } else if (diferencia < 0) {
-                cliente.reducirDeuda((float) -diferencia);
-            }
-        }
     }
 
     // Implementación de métodos abstractos de Movimiento
@@ -113,8 +120,13 @@ public class Venta extends Movimiento implements IReportable {
     // Implementación de métodos de la interfaz IReportable
     @Override
     public String reporteTexto() {
-        return "Venta realizada a " + (cliente != null ? cliente.getNombre() : "Sin cliente")
-                + " por un total de $" + calcularTotal();
+        String nombreCliente;
+        if (cliente != null) {
+            nombreCliente = cliente.getNombre();
+        } else {
+            nombreCliente = "Sin cliente";
+        }
+        return "Venta realizada a " + nombreCliente + " por un total de $" + calcularTotal();
     }
 
     @Override
