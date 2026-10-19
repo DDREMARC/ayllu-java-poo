@@ -7,7 +7,7 @@ public class ConsolaMain {
         int opcion = 0;
 
         //GABRIEL
-        ArrayList<Cliente> clientes = new ArrayList<>();
+        GestorNegocio gestor = new GestorNegocio();
 
         do {
             System.out.println("--- MENÚ PRINCIPAL ---");
@@ -37,20 +37,13 @@ public class ConsolaMain {
                         System.out.print("Ingrese el deuda del cliente: ");
                         double deudaTotal = scanner.nextDouble();
                         //==============================================================================================
-                        clientes.add(new Cliente(nombre, numeroTelefono, codigoPersona, zonaResidencia, deudaTotal));
+                        gestor.registrarClientes(new Cliente(nombre, numeroTelefono, codigoPersona, zonaResidencia, deudaTotal));
                         System.out.println("Registrado exitosamente...");
                         System.out.println(" ");
 
                    break;
                 case 2:
-                    if (clientes.isEmpty()) {
-                        System.out.println("No hay clientes registrados...");
-                    }
-                    else {
-                        for (Cliente cliente : clientes) {
-                            cliente.mostrarDatos();
-                        }
-                    }
+                   gestor.mostrarClientes();
                     break;
                 case 3:
                     System.out.println("Saliendo del programa...");
