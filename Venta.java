@@ -1,12 +1,10 @@
-import java.time.LocalDate;
-
 public class Venta extends Movimiento implements IReportable {
     private Cliente cliente;
     private double pesoKg;
     private double precioKg;
     private double montoPagado;
 
-    public Venta(int id, LocalDate fecha, String descripcion, Cliente cliente, double pesoKg, double precioKg, double montoPagado) {
+    public Venta(int id, String fecha, String descripcion, Cliente cliente, double pesoKg, double precioKg, double montoPagado) {
         super(id, fecha, descripcion);
         this.cliente = cliente;
 

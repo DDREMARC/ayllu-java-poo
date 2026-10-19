@@ -1,4 +1,3 @@
-import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class GestorNegocio {
@@ -122,8 +121,8 @@ public class GestorNegocio {
     }
 
     // Registra una venta. Busca al cliente por código (si se indica) y avisa si no existe.
-    public void registrarVenta(String descripcion, String codigoCliente, double pesoKg, double precioKg, double montoPagado) {
-        if (descripcion.equals("") || pesoKg <= 0 || precioKg <= 0 || montoPagado < 0) {
+    public void registrarVenta(String fecha, String descripcion, String codigoCliente, double pesoKg, double precioKg, double montoPagado) {
+        if (fecha.equals("") || descripcion.equals("") || pesoKg <= 0 || precioKg <= 0 || montoPagado < 0) {
             System.out.println("Error: Datos incompletos o inválidos");
             return;
         }
@@ -142,7 +141,7 @@ public class GestorNegocio {
             }
         }
 
-        Venta venta = new Venta(siguienteIdVenta, LocalDate.now(), descripcion, cliente, pesoKg, precioKg, montoPagado);
+        Venta venta = new Venta(siguienteIdVenta, fecha, descripcion, cliente, pesoKg, precioKg, montoPagado);
         ventas.add(venta);
         siguienteIdVenta = siguienteIdVenta + 1;
         System.out.println("Venta registrada");
@@ -196,11 +195,11 @@ public class GestorNegocio {
         return null;
     }
 
-    public void registrarGasto(String descripcion, String tipo, double monto) {
-        if (descripcion.equals("") || tipo.equals("") || monto <= 0) {
+    public void registrarGasto(String fecha, String descripcion, String tipo, double monto) {
+        if (fecha.equals("") || descripcion.equals("") || tipo.equals("") || monto <= 0) {
             System.out.println("Error: Datos incompletos o inválidos");
         } else {
-            GastoFijo gasto = new GastoFijo(siguienteIdGasto, LocalDate.now(), descripcion, tipo, monto);
+            GastoFijo gasto = new GastoFijo(siguienteIdGasto, fecha, descripcion, tipo, monto);
             // Si el tipo no era válido, GastoFijo lo deja en null: no se guarda
             if (gasto.getTipo() == null) {
                 System.out.println("Error: El gasto no se registró");

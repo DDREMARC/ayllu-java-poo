@@ -98,6 +98,8 @@ public class ConsolaMain {
                     break;
                 case 8:
                     System.out.println("--- Registrar Venta ---");
+                    System.out.print("Ingrese la fecha (dd/mm/aaaa): ");
+                    String fechaVenta = scanner.nextLine();
                     System.out.print("Ingrese la descripción de la venta: ");
                     String descripcionVenta = scanner.nextLine();
                     System.out.print("Ingrese el código del cliente (dejar vacío si no aplica): ");
@@ -109,7 +111,7 @@ public class ConsolaMain {
                     System.out.print("Ingrese el monto pagado: ");
                     double montoPagado = scanner.nextDouble();
                     scanner.nextLine();
-                    gestor.registrarVenta(descripcionVenta, codigoClienteVenta, pesoKg, precioKg, montoPagado);
+                    gestor.registrarVenta(fechaVenta, descripcionVenta, codigoClienteVenta, pesoKg, precioKg, montoPagado);
                     break;
                 case 9:
                     gestor.mostrarVentas();
@@ -132,6 +134,8 @@ public class ConsolaMain {
                     break;
                 case 12:
                     System.out.println("--- Registrar Gasto Fijo ---");
+                    System.out.print("Ingrese la fecha (dd/mm/aaaa): ");
+                    String fechaGasto = scanner.nextLine();
                     System.out.print("Ingrese la descripción del gasto: ");
                     String descripcionGasto = scanner.nextLine();
                     System.out.println("Tipos válidos: implementos, combustible y peajes, agua y gas, otros");
@@ -140,7 +144,7 @@ public class ConsolaMain {
                     System.out.print("Ingrese el monto del gasto: ");
                     double montoGasto = scanner.nextDouble();
                     scanner.nextLine();
-                    gestor.registrarGasto(descripcionGasto, tipoGasto, montoGasto);
+                    gestor.registrarGasto(fechaGasto, descripcionGasto, tipoGasto, montoGasto);
                     break;
                 case 13:
                     gestor.mostrarGastos();

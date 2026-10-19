@@ -1,10 +1,8 @@
-import java.time.LocalDate;
-
 public class GastoFijo extends Movimiento implements IReportable {
     private String tipo;
     private double monto;
 
-    public GastoFijo(int id, LocalDate fecha, String descripcion, String tipo, double monto) {
+    public GastoFijo(int id, String fecha, String descripcion, String tipo, double monto) {
         super(id, fecha, descripcion);
         setTipo(tipo);
         setMonto(monto);
