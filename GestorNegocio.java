@@ -1,4 +1,5 @@
-import java.time.LocalDate;
+
+Gestornegocio · JAVA
 import java.util.ArrayList;
 
 public class GestorNegocio {
@@ -89,9 +90,9 @@ public class GestorNegocio {
         return null;
     }
 
-    // Registra una venta. Busca al cliente por código (si se indica) y avisa si no existe.
-    public void registrarVenta(String descripcion, String codigoCliente, double pesoKg, double precioKg, double montoPagado) {
-        if (descripcion.equals("") || pesoKg <= 0 || precioKg <= 0 || montoPagado < 0) {
+    // Registra una venta. Busca al cliente por código y rechaza la venta si no existe.
+    public void registrarVenta(String descripcion, String fecha, String codigoCliente, double pesoKg, double precioKg, double montoPagado) {
+        if (descripcion.equals("") || fecha.equals("") || pesoKg <= 0 || precioKg <= 0 || montoPagado < 0) {
             System.out.println("Error: Datos incompletos o inválidos");
             return;
         }
@@ -106,11 +107,12 @@ public class GestorNegocio {
         if (!codigoCliente.equals("")) {
             cliente = buscarCliente(codigoCliente);
             if (cliente == null) {
-                System.out.println("Cliente no encontrado, la venta se registrará sin cliente asociado");
+                System.out.println("Error: No existe un cliente con ese código. Venta no registrada");
+                return;
             }
         }
 
-        Venta venta = new Venta(siguienteIdVenta, LocalDate.now(), descripcion, cliente, pesoKg, precioKg, montoPagado);
+        Venta venta = new Venta(siguienteIdVenta, fecha, descripcion, cliente, pesoKg, precioKg, montoPagado);
         ventas.add(venta);
         siguienteIdVenta = siguienteIdVenta + 1;
         System.out.println("Venta registrada");
@@ -121,7 +123,7 @@ public class GestorNegocio {
             System.out.println("No hay ventas registradas...");
         } else {
             for (Venta venta : ventas) {
-                System.out.println(venta.reporteTexto());
+                System.out.println("ID: " + venta.getId() + " | " + venta.reporteTexto());
             }
         }
     }
@@ -158,11 +160,30 @@ public class GestorNegocio {
         return null;
     }
 
-    public void registrarGasto(String descripcion, String tipo, double monto) {
-        if (descripcion.equals("") || tipo.equals("") || monto < 0) {
-            System.out.println("Error: Datos incompletos o inválidos");
+    // Compara el tipo con los tipos válidos antes de crear el gasto
+    private boolean esTipoValido(String tipo) {
+        String tipoNormalizado = tipo.toLowerCase().trim();
+
+        if (tipoNormalizado.equals("implementos")) {
+            return true;
+        } else if (tipoNormalizado.equals("combustible y peajes")) {
+            return true;
+        } else if (tipoNormalizado.equals("agua y gas")) {
+            return true;
+        } else if (tipoNormalizado.equals("otros")) {
+            return true;
         } else {
-            GastoFijo gasto = new GastoFijo(siguienteIdGasto, LocalDate.now(), descripcion, tipo, monto);
+            return false;
+        }
+    }
+
+    public void registrarGasto(String descripcion, String fecha, String tipo, double monto) {
+        if (descripcion.equals("") || fecha.equals("") || tipo.equals("") || monto < 0) {
+            System.out.println("Error: Datos incompletos o inválidos");
+        } else if (!esTipoValido(tipo)) {
+            System.out.println("Error: Tipo de gasto no válido. Tipos permitidos: implementos, combustible y peajes, agua y gas, otros. Gasto no registrado");
+        } else {
+            GastoFijo gasto = new GastoFijo(siguienteIdGasto, fecha, descripcion, tipo, monto);
             gastos.add(gasto);
             siguienteIdGasto = siguienteIdGasto + 1;
             System.out.println("Gasto fijo registrado");
@@ -174,7 +195,7 @@ public class GestorNegocio {
             System.out.println("No hay gastos registrados...");
         } else {
             for (GastoFijo gasto : gastos) {
-                System.out.println(gasto.reporteTexto());
+                System.out.println("ID: " + gasto.getId() + " | " + gasto.reporteTexto());
             }
         }
     }
@@ -199,3 +220,5 @@ public class GestorNegocio {
         }
     }
 }
+
+Claude terminó la respuesta
