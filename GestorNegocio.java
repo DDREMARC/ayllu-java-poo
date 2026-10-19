@@ -45,13 +45,27 @@ public class GestorNegocio {
         }
     }
 
+    public Empleado buscarEmpleado(String codigo) {
+        for (Empleado empleado : empleados) {
+            if (empleado.getCodigoPersona().equals(codigo)) {
+                return empleado;
+            }
+        }
+        return null;
+    }
+
     // Registra un empleado en la lista
     public void registrarEmpleado(String nombre, String telefono, String codigo,
                                    String cargo, double pagoPorDia,
                                    int diasTrabajados, double bono) {
-        empleados.add(new Empleado(nombre, telefono, codigo, cargo,
-                pagoPorDia, diasTrabajados, bono));
-        System.out.println("Empleado registrado");
+        if (nombre.equals("") || telefono.equals("") || codigo.equals("") || cargo.equals("") || pagoPorDia <= 0 || diasTrabajados < 0 || bono < 0) {
+            System.out.println("Error: Datos incompletos o inválidos");
+        } else if (buscarEmpleado(codigo) != null) {
+            System.out.println("Error: Empleado ya existe");
+        } else {
+            empleados.add(new Empleado(nombre, telefono, codigo, cargo, pagoPorDia, diasTrabajados, bono));
+            System.out.println("Empleado registrado");
+        }
     }
 
     // Muestra los empleados registrados

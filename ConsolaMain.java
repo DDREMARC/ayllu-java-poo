@@ -76,19 +76,22 @@ public class ConsolaMain {
     public static void registrarEmpleados(Scanner scanner, GestorNegocio gestor) {
         System.out.println("--- Registrar empleado ---");
         System.out.print("Ingrese nombre: ");
-        String nombre = scanner.next();
+        String nombre = scanner.nextLine();
         System.out.print("Ingrese telefono: ");
-        String numeroTelefono = scanner.next();
+        String numeroTelefono = scanner.nextLine();
         System.out.print("Ingrese codigo: ");
-        String codigoPersona = scanner.next();
+        String codigoPersona = scanner.nextLine();
         System.out.print("Ingrese cargo: ");
-        String cargo = scanner.next();
+        String cargo = scanner.nextLine();
         System.out.print("Ingrese pago por dia: ");
         double pagoPorDia = scanner.nextDouble();
+        scanner.nextLine();
         System.out.print("Ingrese dias trabajados: ");
         int diasTrabajados = scanner.nextInt();
+        scanner.nextLine();
         System.out.print("Ingrese bono: ");
         double bono = scanner.nextDouble();
+        scanner.nextLine();
 
         gestor.registrarEmpleado(
                 nombre,
