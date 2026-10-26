@@ -40,8 +40,6 @@ public class MenuPrincipal {
                     System.out.println("Opción no válida");
             }
         } while (opcion != 0);
-
-        // Cerrar recursos compartidos al salir del programa
         try {
             if (Ventas.conexion != null) {
                 Ventas.conexion.close();
