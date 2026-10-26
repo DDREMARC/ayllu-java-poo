@@ -66,6 +66,7 @@ CREATE TABLE `gasto_fijo` (
         FOREIGN KEY (`id_tipo`) REFERENCES `tipo_gasto` (`id_tipo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 COMMIT;
+alter table gasto_fijo modify id_gasto int not null auto_increment;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
