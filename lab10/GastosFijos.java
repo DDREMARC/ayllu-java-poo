@@ -2,9 +2,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class gastosfijos {
+public class GastosFijos {
 
-    public static void menugastosfijos() {
+    public static void menuGastosFijos() {
         int opcion;
         do {
             System.out.println("\n--- ADMINISTRAR GASTOS FIJOS ---");
