@@ -1,10 +1,11 @@
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.*;
 
-public class GastosFijos {
+public class gastosfijos {
 
-    public static void menuGastosFijos() {
+    public static void menugastosfijos() {
         int opcion;
         do {
             System.out.println("\n--- ADMINISTRAR GASTOS FIJOS ---");
@@ -18,26 +19,13 @@ public class GastosFijos {
             opcion = Ventas.leerEntero("\nSeleccione una opción: ");
 
             switch (opcion) {
-                case 1:
-                    registrar();
-                    break;
-                case 2:
-                    listar();
-                    break;
-                case 3:
-                    buscar();
-                    break;
-                case 4:
-                    actualizar();
-                    break;
-                case 5:
-                    eliminar();
-                    break;
-                case 0:
-                    System.out.println("Regresando al menú principal...");
-                    break;
-                default:
-                    System.out.println("Opción no válida");
+                case 1: registrar(); break;
+                case 2: listar(); break;
+                case 3: buscar(); break;
+                case 4: actualizar(); break;
+                case 5: eliminar(); break;
+                case 0: System.out.println("Regresando al menú principal..."); break;
+                default: System.out.println("Opción no válida");
             }
         } while (opcion != 0);
     }
@@ -45,10 +33,8 @@ public class GastosFijos {
     // INSERT
     static void registrar() {
         int idTipo = Ventas.leerEntero("Id del tipo de gasto (1=Implementos, 2=Combustible y peajes, 3=Agua y gas): ");
-        System.out.print("Monto: ");
-        String monto = Ventas.sc.nextLine();
+        float monto = Ventas.leerFloat("Monto: ");
 
-        // La fecha se llena sola con la fecha actual (valor por defecto de la tabla)
         String sql = "INSERT INTO gasto_fijo (id_tipo, monto) VALUES (" + idTipo + ", " + monto + ")";
         ejecutarCambio(sql, "Registro insertado correctamente.", "No se realizó ningún cambio.");
     }
@@ -61,10 +47,7 @@ public class GastosFijos {
             boolean hayDatos = false;
             while (rs.next()) {
                 hayDatos = true;
-                System.out.println("ID: " + rs.getInt("id_gasto")
-                        + " | Tipo: " + rs.getInt("id_tipo")
-                        + " | Fecha: " + rs.getDate("fecha")
-                        + " | Monto: " + rs.getDouble("monto"));
+                mostrarGasto(rs);
             }
             if (!hayDatos) {
                 System.out.println("No hay registros.");
@@ -83,10 +66,7 @@ public class GastosFijos {
             Statement st = Ventas.conexion.createStatement();
             ResultSet rs = st.executeQuery("SELECT * FROM gasto_fijo WHERE id_gasto = " + id);
             if (rs.next()) {
-                System.out.println("ID: " + rs.getInt("id_gasto")
-                        + " | Tipo: " + rs.getInt("id_tipo")
-                        + " | Fecha: " + rs.getDate("fecha")
-                        + " | Monto: " + rs.getDouble("monto"));
+                mostrarGasto(rs);
             } else {
                 System.out.println("No se encontró el registro solicitado.");
             }
@@ -101,8 +81,7 @@ public class GastosFijos {
     static void actualizar() {
         int id = Ventas.leerEntero("Id del gasto a actualizar: ");
         int idTipo = Ventas.leerEntero("Nuevo id de tipo de gasto: ");
-        System.out.print("Nuevo monto: ");
-        String monto = Ventas.sc.nextLine();
+        float monto = Ventas.leerFloat("Nuevo monto: ");
 
         String sql = "UPDATE gasto_fijo SET id_tipo = " + idTipo + ", monto = " + monto
                 + " WHERE id_gasto = " + id;
@@ -114,6 +93,14 @@ public class GastosFijos {
         int id = Ventas.leerEntero("Id del gasto a eliminar: ");
         String sql = "DELETE FROM gasto_fijo WHERE id_gasto = " + id;
         ejecutarCambio(sql, "Registro eliminado correctamente.", "No se encontró el registro solicitado.");
+    }
+
+    // Muestra los datos de la fila actual del ResultSet
+    static void mostrarGasto(ResultSet rs) throws SQLException {
+        System.out.println("ID: " + rs.getInt("id_gasto")
+                + " | Tipo: " + rs.getInt("id_tipo")
+                + " | Fecha: " + rs.getDate("fecha")
+                + " | Monto: " + rs.getDouble("monto"));
     }
 
     // Ejecuta INSERT, UPDATE o DELETE y muestra el resultado según las filas afectadas

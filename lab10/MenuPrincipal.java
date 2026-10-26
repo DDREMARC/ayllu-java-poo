@@ -5,7 +5,7 @@ public class MenuPrincipal {
     public static void main(String[] args) {
 
         try {
-            Ventas.conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/ayllu_pollos", "root", ""); //COLOCAR TU XAMP
+            Ventas.conexion = DriverManager.getConnection("jdbc:mysql://localhost:3306/ayllu_pollos", "root", "");
             System.out.println("Conexión exitosa");
         } catch (SQLException e) {
             System.out.println("Error al conectar: " + e.getMessage());
@@ -17,7 +17,7 @@ public class MenuPrincipal {
         do {
             System.out.println("\n--- MENÚ PRINCIPAL ---");
             System.out.println("1. Administrar ventas");
-            System.out.println("2. Administrar tabla 2 (próximamente)");
+            System.out.println("2. Administra los gastos fijos");
             System.out.println("3. Administrar tabla 3 (próximamente)");
             System.out.println("0. Salir");
 
@@ -28,7 +28,7 @@ public class MenuPrincipal {
                     Ventas.menuVentas();
                     break;
                 case 2:
-                    GastosFijos.menuGastosFijos();
+                    gastosfijos.menugastosfijos();
                     break;
                 case 3:
                     System.out.println("Esta tabla todavía no está lista.");
