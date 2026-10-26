@@ -51,6 +51,7 @@ INSERT INTO `tipo_gasto` (`id_tipo`, `nombre`) VALUES
 ALTER TABLE `tipo_gasto`
     ADD PRIMARY KEY (`id_tipo`);
 COMMIT;
+alter table gasto_fijo modify id_gasto int not null auto_increment;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
