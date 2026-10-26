@@ -28,7 +28,7 @@ public class MenuPrincipal {
                     Ventas.menuVentas();
                     break;
                 case 2:
-                    System.out.println("Esta tabla todavía no está lista.");
+                    GastosFijos.menuGastosFijos();
                     break;
                 case 3:
                     System.out.println("Esta tabla todavía no está lista.");
