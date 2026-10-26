@@ -29,7 +29,6 @@ public class gastosfijos {
         } while (opcion != 0);
     }
 
-    // INSERT
     static void registrar() {
         int idTipo = Ventas.leerEntero("Id del tipo de gasto (1=Implementos, 2=Combustible y peajes, 3=Agua y gas): ");
         float monto = Ventas.leerFloat("Monto: ");
@@ -37,8 +36,6 @@ public class gastosfijos {
         String sql = "INSERT INTO gasto_fijo (id_tipo, monto) VALUES (" + idTipo + ", " + monto + ")";
         ejecutarCambio(sql, "Registro insertado correctamente.", "No se realizó ningún cambio.");
     }
-
-    // SELECT (todos)
     static void listar() {
         try {
             Statement st = Ventas.conexion.createStatement();
@@ -58,7 +55,6 @@ public class gastosfijos {
         }
     }
 
-    // SELECT (por id)
     static void buscar() {
         int id = Ventas.leerEntero("Id del gasto: ");
         try {
@@ -76,7 +72,6 @@ public class gastosfijos {
         }
     }
 
-    // UPDATE
     static void actualizar() {
         int id = Ventas.leerEntero("Id del gasto a actualizar: ");
         int idTipo = Ventas.leerEntero("Nuevo id de tipo de gasto: ");
@@ -87,14 +82,12 @@ public class gastosfijos {
         ejecutarCambio(sql, "Registro actualizado correctamente.", "No se encontró el registro solicitado.");
     }
 
-    // DELETE
     static void eliminar() {
         int id = Ventas.leerEntero("Id del gasto a eliminar: ");
         String sql = "DELETE FROM gasto_fijo WHERE id_gasto = " + id;
         ejecutarCambio(sql, "Registro eliminado correctamente.", "No se encontró el registro solicitado.");
     }
 
-    // Muestra los datos de la fila actual del ResultSet
     static void mostrarGasto(ResultSet rs) throws SQLException {
         System.out.println("ID: " + rs.getInt("id_gasto")
                 + " | Tipo: " + rs.getInt("id_tipo")
@@ -102,7 +95,6 @@ public class gastosfijos {
                 + " | Monto: " + rs.getDouble("monto"));
     }
 
-    // Ejecuta INSERT, UPDATE o DELETE y muestra el resultado según las filas afectadas
     static void ejecutarCambio(String sql, String mensajeOk, String mensajeNada) {
         try {
             Statement st = Ventas.conexion.createStatement();
