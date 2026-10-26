@@ -18,7 +18,7 @@ public class MenuPrincipal {
             System.out.println("\n--- MENÚ PRINCIPAL ---");
             System.out.println("1. Administrar ventas");
             System.out.println("2. Administrar personas (clientes y empleados)");
-            System.out.println("3. Administrar gastos fijos (próximamente)");
+            System.out.println("3. Administrar gastos fijos");
             System.out.println("0. Salir");
 
             opcion = Ventas.leerEntero("\nSeleccione una opción: ");
@@ -31,7 +31,7 @@ public class MenuPrincipal {
                     Personas.menuPersonas();
                     break;
                 case 3:
-                    System.out.println("Esta tabla todavía no está lista.");
+                    GastosFijos.menuGastosFijos();
                     break;
                 case 0:
                     System.out.println("Saliendo...");
