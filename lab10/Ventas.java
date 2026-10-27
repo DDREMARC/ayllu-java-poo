@@ -65,7 +65,6 @@ public class Ventas {
         }
     }
 
-    // Igual que leerEntero pero para números con decimales (precio, peso, pago)
     public static float leerFloat(String mensaje) {
         while (true) {
             System.out.print(mensaje);
@@ -80,7 +79,6 @@ public class Ventas {
         }
     }
 
-    // Pide una línea de texto y no deja avanzar si la dejan vacía
     public static String leerTexto(String mensaje) {
         while (true) {
             System.out.print(mensaje);
@@ -121,7 +119,6 @@ public class Ventas {
             if (!rs.isBeforeFirst()) {
                 System.out.println("No hay ventas registradas todavía.");
             }
-
             while (rs.next()) {
                 mostrarVenta(
                         rs.getInt("Codigo_venta"),
@@ -141,12 +138,10 @@ public class Ventas {
 
     public static void buscarVentas() {
         int codigo_venta = leerEntero("Ingrese el codigo de venta: ");
-
         try {
             Statement stmt = conexion.createStatement();
             String sql = "SELECT * FROM ventas WHERE Codigo_venta = " + codigo_venta;
             ResultSet rs = stmt.executeQuery(sql);
-
             if (rs.next()) {
                 mostrarVenta(
                         rs.getInt("Codigo_venta"),
@@ -161,7 +156,6 @@ public class Ventas {
             }
             rs.close();
             stmt.close();
-
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -170,7 +164,6 @@ public class Ventas {
     public static void actualizarVentas() {
         int id = leerEntero("Ingrese el codigo de venta: ");
         float pagoPollo = leerFloat("Ingrese el nuevo monto a pagar del pollo: ");
-
         try {
             Statement stmt = conexion.createStatement();
             String sql = "UPDATE ventas SET Pago_pollo = " + pagoPollo + " WHERE Codigo_venta = " + id;
@@ -182,33 +175,28 @@ public class Ventas {
                 System.out.println("No se hizo la actualización");
             }
             stmt.close();
-
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
     public static void eliminarVentas() {
-        int id = leerEntero("Ingrese el codigo de la venta a eliminar: ");
-
+        int id = leerEntero("Ingrese el código de la venta a eliminar: ");
         try {
             Statement stmt = conexion.createStatement();
             String sql = "DELETE FROM ventas WHERE Codigo_venta = " + id;
             int filas = stmt.executeUpdate(sql);
-
             if (filas > 0) {
                 System.out.println("Venta eliminada");
             } else {
                 System.out.println("No se encontró la venta");
             }
             stmt.close();
-
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
 
-    // Muestra los datos de una venta por consola (total y deuda calculados al vuelo)
     public static void mostrarVenta(int codigoVenta, float precio, float peso, float pagoPollo,
                                      String fecha, String codigoCliente) {
         float total = peso * precio;
