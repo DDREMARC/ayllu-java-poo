@@ -38,18 +38,19 @@ El **PreparedStatement** es dejar un `?` como "espacio en blanco" en el texto SQ
 
 ```
 lab11/
-├── Ventas/       VentaModel.java, VentaController.java
-├── Personas/     PersonaModel.java, PersonaController.java
-├── GastosFijos/  GastoFijoModel.java, GastoFijoController.java
-├── DatabaseConnector.java   (UNA sola, compartida — ver aviso abajo)
-├── MainView.java            (la vista)
-├── Main.java                (solo arranca la vista)
+├── src/                         (todo el código Java, es la carpeta "src" de IntelliJ)
+│   ├── VentaModel.java, VentaController.java
+│   ├── PersonaModel.java, PersonaController.java
+│   ├── GastoFijoModel.java, GastoFijoController.java
+│   ├── DatabaseConnector.java   (UNA sola, compartida — ver aviso abajo)
+│   ├── MainView.java            (la vista)
+│   └── Main.java                (solo arranca la vista)
 ├── script_lab11.sql
 ├── PENDIENTES-LAB11.md
-└── REPARTO-LAB11.md         (este archivo)
+└── REPARTO-LAB11.md             (este archivo)
 ```
 
-> **Aviso importante:** ahora mismo hay **tres copias** del conector (`DatabaseConectorVentas.java`, `DatabaseConectorPersonas.java`, `DatabaseConectorGastosFijos.java`), y las tres tienen adentro una clase llamada `DatabaseConector`. Así **no va a compilar** (tres clases con el mismo nombre). Debe haber **una sola** clase `DatabaseConnector` que usen los tres controladores. Angel la termina y las otras dos copias se borran. Nadie más crea su propio conector.
+> **Aviso importante:** ahora mismo hay **tres copias** del conector (`src/DatabaseConectorVentas.java`, `src/DatabaseConectorPersonas.java`, `src/DatabaseConectorGastosFijos.java`), y las tres tienen adentro una clase llamada `DatabaseConector`. Así **no va a compilar** (tres clases con el mismo nombre). Debe haber **una sola** clase `DatabaseConnector` que usen los tres controladores. Angel la termina y las otras dos copias se borran. Nadie más crea su propio conector.
 
 ---
 
@@ -59,7 +60,7 @@ lab11/
 
 ### Angel — Ventas + el conector compartido
 
-Archivos: `Ventas/VentaModel.java`, `Ventas/VentaController.java`, `DatabaseConnector.java`
+Archivos: `src/VentaModel.java`, `src/VentaController.java`, `src/DatabaseConnector.java`
 
 Datos de la tabla `ventas`: `Codigo_venta` (lo genera solo la base de datos), `Precio`, `Peso`, `Pago_pollo`, `Fecha` (AAAA-MM-DD), `Codigo_Cliente` (texto).
 
@@ -72,7 +73,7 @@ Datos de la tabla `ventas`: `Codigo_venta` (lo genera solo la base de datos), `P
 
 ### Dan — Personas (clientes y empleados)
 
-Archivos: `Personas/PersonaModel.java`, `Personas/PersonaController.java`
+Archivos: `src/PersonaModel.java`, `src/PersonaController.java`
 
 Datos de la tabla `personas` (una sola tabla para clientes y empleados): `codigo_persona`, `nombre`, `numero_telefono`, `es_empleado` (0 = cliente, 1 = empleado), `cargo`, `pago_por_dia`, `dias_trabajados`, `bono` (estos tres últimos solo para empleados), `zona_residencia`, `deuda_total` (estos dos últimos solo para clientes).
 
@@ -85,7 +86,7 @@ Datos de la tabla `personas` (una sola tabla para clientes y empleados): `codigo
 
 ### Leo — Gastos fijos + la vista
 
-Archivos: `GastosFijos/GastoFijoModel.java`, `GastosFijos/GastoFijoController.java`, `MainView.java`, `Main.java`
+Archivos: `src/GastoFijoModel.java`, `src/GastoFijoController.java`, `src/MainView.java`, `src/Main.java`
 
 Datos de la tabla `gasto_fijo`: `id_gasto` (automático), `id_tipo`, `fecha`, `monto`. Los tipos están en la tabla `tipo_gasto`: 1 = Implementos, 2 = Combustible y peajes, 3 = Agua y gas.
 
