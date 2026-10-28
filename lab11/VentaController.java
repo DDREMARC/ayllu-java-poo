@@ -13,6 +13,7 @@ public class VentaController {
         this.ventasModelo = new ArrayList<>();
     }
 
+    // TODO: url, usuario, contraseña y este metodo se mueven a DatabaseConnector.java (aqui la conexion llega por el constructor)
     public void conectarBaseDatos(){
         try{
             connection = DriverManager.getConnection(
@@ -36,11 +37,9 @@ public class VentaController {
             preparedStatement.setString(5, ventaModel.getCodigoCliente());
 
             int filasCambiadas = preparedStatement.executeUpdate();
-            ArrayList<VentaModel> ventaModel = new Arraylist<>();
-            registrar.add();
             if (filasCambiadas > 0){
                 System.out.println("Se ha registrado con exito");
-                add.lista
+                // TODO: anotar aqui la venta en la lista ventasModelo (lista, punto, add, la venta entre parentesis)
             }
             else {
                 System.out.println("No se hizo los cambios");
@@ -52,6 +51,11 @@ public class VentaController {
         }
     }
 
+    // TODO: arreglar este metodo y renombrarlo a buscarPorId:
+    //  - en el SQL y en los get("...") usar los nombres de la base de datos (Codigo_venta, Precio, Peso, Pago_pollo, Codigo_Cliente, Fecha)
+    //  - el tipo de texto es String (no "getString"), y el codigo del cliente se lee con el get de texto
+    //  - armar un VentaModel con los 6 datos (en el orden de su constructor) y mostrarlo con mostrarVenta()
+    //  - avisar si no se encontro ninguna venta con ese codigo
     public void selectCodigo_venta(int codigoConsultar){
         try{
             String query = "SELECT * FROM ventas where codigoVenta = ?";
@@ -74,43 +78,7 @@ public class VentaController {
         }
     }
 
-    /*public void insertProducto(int codigo, String nombre, float precio){
-        try{
-            String query = "INSERT INTO productos VALUES(?, ?, ?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, codigo);
-            preparedStatement.setString(2, nombre);
-            preparedStatement.setFloat(3, precio);
-            int filasAfectadas = preparedStatement.executeUpdate();
-            System.out.println("Filas afectadas: " + filasAfectadas);
-        }catch (SQLException error){
-            System.out.println(error.getMessage());
-        }
-    }*/
-
-    public void updateProducto(int codigo, String nombre, float precio){
-        try{
-            String query = "UPDATE productos SET nombre = ?, precio = ? where codigo = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setString(1, nombre);
-            preparedStatement.setFloat(2, precio);
-            preparedStatement.setInt(3, codigo);
-            int filasAfectadas = preparedStatement.executeUpdate();
-            System.out.println("Filas afectadas: " + filasAfectadas);
-        }catch (SQLException error){
-            System.out.println(error.getMessage());
-        }
-    }
-
-    public void deleteProducto(int codigo){
-        try {
-            String query = "DELETE FROM productos where codigo = ?";
-            PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, codigo);
-            int filasAfectadas = preparedStatement.executeUpdate();
-            System.out.println("Filas afectadas: " + filasAfectadas);
-        }catch (SQLException error){
-            System.out.println(error.getMessage());
-        }
-    }
+    // TODO: listar()    -> Statement normal, limpiar la lista, llenarla con un VentaModel por fila y mostrarla
+    // TODO: actualizar(VentaModel) -> PreparedStatement (UPDATE ... WHERE Codigo_venta = ?), cuidar el orden de los ?
+    // TODO: eliminar(int codigo)   -> PreparedStatement (DELETE ... WHERE Codigo_venta = ?)
 }

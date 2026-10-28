@@ -23,6 +23,10 @@ También cambia la forma de mandar los datos a la base de datos: ya no escribimo
 
 Los archivos ya están creados en la carpeta `lab11/` del repo, vacíos pero con comentarios adentro explicando qué tiene que llevar cada uno.
 
+## Clase extra que sugirió el profesor: `DatabaseConnector.java`
+
+Es la clase que abre la conexión a la base de datos, para que los tres controladores no repitan los datos de conexión. Cada controlador (`VentaController`, `PersonaController`, `GastoFijoController`) recibe la conexión por su constructor. Ya está creada vacía con comentarios; Angel la termina.
+
 ## Lo que se arma al final, entre los tres
 
 - **`MainView.java` y `Main.java`** (el menú principal): hay que esperar a que las 3 tablas tengan su controlador listo antes de armar el menú que las une. Lo puede armar quien hizo `MenuPrincipal.java` en el Lab 10, con ayuda de los otros dos para probarlo.
