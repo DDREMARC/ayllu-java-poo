@@ -17,5 +17,9 @@
 //    leerDouble, leerTexto), protegidos con hasNextInt()/hasNextDouble()
 //    para que una letra no rompa el programa, igual que en el Lab 10.
 public class MainView {
+    public void ejecutar(){
+        VentaController ventaController = new VentaController;
+        DatabaseConnector databaseConnector = new DatabaseConector(VentaController);
+    }
 
 }
