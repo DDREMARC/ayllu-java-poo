@@ -10,12 +10,12 @@ Proyecto: sistema de venta de pollos — base de datos `ayllu_pollos` (mismas 3 
 
 ## Checklist de archivos (ya creados vacíos, falta completar la lógica)
 
-- [ ] `src/VentaModel.java`
-- [ ] `src/VentaController.java`
-- [ ] `src/PersonaModel.java`
-- [ ] `src/PersonaController.java`
-- [ ] `src/GastoFijoModel.java`
-- [ ] `src/GastoFijoController.java`
+- [ ] `Ventas/VentaModel.java`
+- [ ] `Ventas/VentaController.java`
+- [ ] `Personas/PersonaModel.java`
+- [ ] `Personas/PersonaController.java`
+- [ ] `GastosFijos/GastoFijoModel.java`
+- [ ] `GastosFijos/GastoFijoController.java`
 - [ ] `MainView.java`
 - [ ] `Main.java`
 - [ ] `script_lab11.sql`
