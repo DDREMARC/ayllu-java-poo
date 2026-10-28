@@ -2,10 +2,6 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class VentaController {
-    private String url = "jdbc:mysql://localhost:3306/ayllu_pollos";
-    private Connection connection;
-    private String usuario = "root";
-    private String contraseña = "";
     private ArrayList<VentaModel> ventasModelo;
 
     public VentaController(Connection connection) {
@@ -36,8 +32,6 @@ public class VentaController {
             preparedStatement.setString(5, ventaModel.getCodigoCliente());
 
             int filasCambiadas = preparedStatement.executeUpdate();
-            ArrayList<VentaModel> ventaModel = new Arraylist<>();
-            registrar.add();
             if (filasCambiadas > 0){
                 System.out.println("Se ha registrado con exito");
                 add.lista
