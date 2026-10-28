@@ -17,9 +17,9 @@ También cambia la forma de mandar los datos a la base de datos: ya no escribimo
 
 | Tabla | Archivos | Quién sigue con eso |
 |---|---|---|
-| Ventas | `VentaModel.java` + `VentaController.java` | **Angel** (ya la conoce del Lab 10) |
-| Personas (clientes y empleados) | `PersonaModel.java` + `PersonaController.java` | **quien hizo `Personas.java` en el Lab 10** |
-| Gastos fijos | `GastoFijoModel.java` + `GastoFijoController.java` | **quien hizo `GastosFijos.java` en el Lab 10** |
+| Ventas | `Ventas/VentaModel.java` + `Ventas/VentaController.java` | **Angel** (ya la conoce del Lab 10) |
+| Personas (clientes y empleados) | `Personas/PersonaModel.java` + `Personas/PersonaController.java` | **quien hizo `Personas.java` en el Lab 10** |
+| Gastos fijos | `GastosFijos/GastoFijoModel.java` + `GastosFijos/GastoFijoController.java` | **quien hizo `GastosFijos.java` en el Lab 10** |
 
 Los archivos ya están creados en la carpeta `lab11/` del repo, vacíos pero con comentarios adentro explicando qué tiene que llevar cada uno.
 
