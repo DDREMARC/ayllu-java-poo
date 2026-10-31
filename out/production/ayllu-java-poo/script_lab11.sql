@@ -1,0 +1,9 @@
+-- Script SQL del Laboratorio 11 - base de datos ayllu_pollos
+-- Mismas 3 tablas que el Lab 10 (ventas, personas, gasto_fijo + tipo_gasto).
+--
+-- Si ya tienen el script del Lab 10 (script_ventas.sql, script_personas.sql,
+-- script_gastosfijos.sql), pueden juntarlos aqui en un solo archivo:
+-- CREATE DATABASE/USE, luego los 3-4 CREATE TABLE con su PRIMARY KEY, y
+-- unos INSERT de datos de prueba para cada tabla.
+--
+-- TODO: pegar/escribir aqui el script completo.
