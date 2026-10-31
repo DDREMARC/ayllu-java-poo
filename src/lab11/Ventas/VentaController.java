@@ -36,7 +36,6 @@ public class VentaController {
         }
     }
 
-    //COMPLETADO
     public void buscarPorId(int codigoConsultar){
         try{
             String query = "SELECT * FROM ventas where Codigo_venta = ?";
@@ -57,6 +56,7 @@ public class VentaController {
             else {
                 System.out.println("No se encontro el registro");
             }
+            resultSet.close();
             preparedStatement.close();
         }
         catch (SQLException error){
