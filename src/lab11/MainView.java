@@ -18,8 +18,8 @@
 //    para que una letra no rompa el programa, igual que en el Lab 10.
 public class MainView {
     public void ejecutar(){
-        // TEMPORAL: VentaController ventaController = new VentaController;
-        // TEMPORAL: DatabaseConnector databaseConnector = new DatabaseConector(VentaController);
+        VentaController ventaController = new VentaController;
+        DatabaseConnector databaseConnector = new DatabaseConector(VentaController);
     }
 
 }
