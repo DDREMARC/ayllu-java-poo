@@ -2,22 +2,12 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class VentaController {
+    private Connection connection;
     private ArrayList<VentaModel> ventasModelo;
 
     public VentaController(Connection connection) {
         this.connection = connection;
         this.ventasModelo = new ArrayList<>();
-    }
-
-    public void conectarBaseDatos(){
-        try{
-            connection = DriverManager.getConnection(
-                    url, usuario, contraseña);
-            System.out.println("Se estableció la conexión con la base de datos");
-        } catch (
-                SQLException error) {
-            System.out.println(error.getMessage());
-        }
     }
 
     public void registrar(VentaModel ventaModel){
@@ -34,7 +24,7 @@ public class VentaController {
             int filasCambiadas = preparedStatement.executeUpdate();
             if (filasCambiadas > 0){
                 System.out.println("Se ha registrado con exito");
-                add.lista
+                ventasModelo.add(ventaModel);
             }
             else {
                 System.out.println("No se hizo los cambios");

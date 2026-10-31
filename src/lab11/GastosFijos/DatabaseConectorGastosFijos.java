@@ -1,5 +1,3 @@
-package services;
-import controllers.ProductoController;
 import java.sql.*;
 
 public class DatabaseConectorGastosFijos {
@@ -7,5 +5,4 @@ public class DatabaseConectorGastosFijos {
     private Connection connection;
     private String usuario = "root";
     private String contraseña = "";
-    public DatabaseConectorGastosFijos(product controller product controller)  {}
 }
