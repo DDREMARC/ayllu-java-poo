@@ -96,13 +96,13 @@ public class MainView {
 
                     if (tipo == 1) {
                         String cargo = leerTexto(sc, "Cargo: ");
-                        float pagoPorDia = (float) leerDouble(sc, "Pago por dia: ");
+                        double pagoPorDia = leerDouble(sc, "Pago por dia: ");
                         int dias = leerEntero(sc, "Dias trabajados: ");
-                        float bono = (float) leerDouble(sc, "Bono: ");
+                        double bono = leerDouble(sc, "Bono: ");
                         controller.registrar(new PersonaModel(codigo, nombre, telefono, 1, null, 0, cargo, pagoPorDia, dias, bono));
                     } else if (tipo == 0) {
                         String zona = leerTexto(sc, "Zona de residencia: ");
-                        float deuda = (float) leerDouble(sc, "Deuda inicial: ");
+                        double deuda = leerDouble(sc, "Deuda inicial: ");
                         controller.registrar(new PersonaModel(codigo, nombre, telefono, 0, zona, deuda, null, 0, 0, 0));
                     } else {
                         System.out.println("Tipo invalido, escribe 1 o 0");
@@ -129,13 +129,13 @@ public class MainView {
 
                         if (tipo == 1) {
                             String cargo = leerTexto(sc, "Cargo: ");
-                            float pagoPorDia = (float) leerDouble(sc, "Pago por dia: ");
+                            double pagoPorDia = leerDouble(sc, "Pago por dia: ");
                             int dias = leerEntero(sc, "Dias trabajados: ");
-                            float bono = (float) leerDouble(sc, "Bono: ");
+                            double bono = leerDouble(sc, "Bono: ");
                             controller.actualizar(new PersonaModel(codigo, nombre, telefono, 1, null, 0, cargo, pagoPorDia, dias, bono));
                         } else {
                             String zona = leerTexto(sc, "Zona de residencia: ");
-                            float deuda = (float) leerDouble(sc, "Deuda total: ");
+                            double deuda = leerDouble(sc, "Deuda total: ");
                             controller.actualizar(new PersonaModel(codigo, nombre, telefono, 0, zona, deuda, null, 0, 0, 0));
                         }
                     }

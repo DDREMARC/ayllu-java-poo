@@ -19,15 +19,15 @@ public class PersonaModel {
     private String numeroTelefono;
     private int esEmpleado;
     private String zonaResidencia;
-    private float deudaTotal;
+    private double deudaTotal;
     private String cargo;
-    private float pagoPorDia;
+    private double pagoPorDia;
     private int diasTrabajados;
-    private float bono;
+    private double bono;
 
     public PersonaModel(String codigoPersona, String nombre, String numeroTelefono, int esEmpleado,
-                        String zonaResidencia, float deudaTotal,
-                        String cargo, float pagoPorDia, int diasTrabajados, float bono) {
+                        String zonaResidencia, double deudaTotal,
+                        String cargo, double pagoPorDia, int diasTrabajados, double bono) {
         this.codigoPersona = codigoPersona;
         this.nombre = nombre;
         this.numeroTelefono = numeroTelefono;
@@ -80,11 +80,11 @@ public class PersonaModel {
         this.zonaResidencia = zonaResidencia;
     }
 
-    public float getDeudaTotal() {
+    public double getDeudaTotal() {
         return deudaTotal;
     }
 
-    public void setDeudaTotal(float deudaTotal) {
+    public void setDeudaTotal(double deudaTotal) {
         this.deudaTotal = deudaTotal;
     }
 
@@ -96,11 +96,11 @@ public class PersonaModel {
         this.cargo = cargo;
     }
 
-    public float getPagoPorDia() {
+    public double getPagoPorDia() {
         return pagoPorDia;
     }
 
-    public void setPagoPorDia(float pagoPorDia) {
+    public void setPagoPorDia(double pagoPorDia) {
         this.pagoPorDia = pagoPorDia;
     }
 
@@ -112,11 +112,11 @@ public class PersonaModel {
         this.diasTrabajados = diasTrabajados;
     }
 
-    public float getBono() {
+    public double getBono() {
         return bono;
     }
 
-    public void setBono(float bono) {
+    public void setBono(double bono) {
         this.bono = bono;
     }
 

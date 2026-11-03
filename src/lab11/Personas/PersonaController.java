@@ -45,9 +45,9 @@ public class PersonaController {
                 preparedStatement.setString(2, persona.getNombre());
                 preparedStatement.setString(3, persona.getNumeroTelefono());
                 preparedStatement.setString(4, persona.getCargo());
-                preparedStatement.setFloat(5, persona.getPagoPorDia());
+                preparedStatement.setDouble(5, persona.getPagoPorDia());
                 preparedStatement.setInt(6, persona.getDiasTrabajados());
-                preparedStatement.setFloat(7, persona.getBono());
+                preparedStatement.setDouble(7, persona.getBono());
             } else {
                 String query = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, zona_residencia, deuda_total) VALUES (?, ?, ?, 0, ?, ?)";
                 preparedStatement = connection.prepareStatement(query);
@@ -55,7 +55,7 @@ public class PersonaController {
                 preparedStatement.setString(2, persona.getNombre());
                 preparedStatement.setString(3, persona.getNumeroTelefono());
                 preparedStatement.setString(4, persona.getZonaResidencia());
-                preparedStatement.setFloat(5, persona.getDeudaTotal());
+                preparedStatement.setDouble(5, persona.getDeudaTotal());
             }
 
             int filasCambiadas = preparedStatement.executeUpdate();
@@ -146,9 +146,9 @@ public class PersonaController {
                 preparedStatement.setString(1, persona.getNombre());
                 preparedStatement.setString(2, persona.getNumeroTelefono());
                 preparedStatement.setString(3, persona.getCargo());
-                preparedStatement.setFloat(4, persona.getPagoPorDia());
+                preparedStatement.setDouble(4, persona.getPagoPorDia());
                 preparedStatement.setInt(5, persona.getDiasTrabajados());
-                preparedStatement.setFloat(6, persona.getBono());
+                preparedStatement.setDouble(6, persona.getBono());
                 preparedStatement.setString(7, persona.getCodigoPersona());
             } else {
                 String query = "UPDATE personas SET nombre = ?, numero_telefono = ?, zona_residencia = ?, deuda_total = ? WHERE codigo_persona = ?";
@@ -156,7 +156,7 @@ public class PersonaController {
                 preparedStatement.setString(1, persona.getNombre());
                 preparedStatement.setString(2, persona.getNumeroTelefono());
                 preparedStatement.setString(3, persona.getZonaResidencia());
-                preparedStatement.setFloat(4, persona.getDeudaTotal());
+                preparedStatement.setDouble(4, persona.getDeudaTotal());
                 preparedStatement.setString(5, persona.getCodigoPersona());
             }
 
@@ -198,10 +198,10 @@ public class PersonaController {
                 resultSet.getString("numero_telefono"),
                 resultSet.getInt("es_empleado"),
                 resultSet.getString("zona_residencia"),
-                resultSet.getFloat("deuda_total"),
+                resultSet.getDouble("deuda_total"),
                 resultSet.getString("cargo"),
-                resultSet.getFloat("pago_por_dia"),
+                resultSet.getDouble("pago_por_dia"),
                 resultSet.getInt("dias_trabajados"),
-                resultSet.getFloat("bono"));
+                resultSet.getDouble("bono"));
     }
 }
