@@ -38,7 +38,7 @@ CREATE TABLE `gasto_fijo` (
   PRIMARY KEY (`id_gasto`),
   KEY `id_tipo` (`id_tipo`),
   CONSTRAINT `gasto_fijo_ibfk_1` FOREIGN KEY (`id_tipo`) REFERENCES `tipo_gasto` (`id_tipo`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -47,7 +47,7 @@ CREATE TABLE `gasto_fijo` (
 
 LOCK TABLES `gasto_fijo` WRITE;
 /*!40000 ALTER TABLE `gasto_fijo` DISABLE KEYS */;
-INSERT INTO `gasto_fijo` VALUES (1,1,'2026-10-05',150.00),(2,2,'2026-10-12',85.50),(3,3,'2026-10-20',60.00);
+INSERT INTO `gasto_fijo` VALUES (1,1,'2026-10-05',120.50),(2,2,'2026-10-12',85.00),(3,3,'2026-10-20',60.00),(4,1,'2026-10-28',45.90),(5,2,'2026-11-01',100.00);
 /*!40000 ALTER TABLE `gasto_fijo` ENABLE KEYS */;
 UNLOCK TABLES;
 
