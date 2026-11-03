@@ -8,6 +8,7 @@ public class MainView {
 
         VentaController ventaController = new VentaController(dc.getConnection());
         PersonaController personaController = new PersonaController(dc.getConnection());
+        GastoFijoController gastoController = new GastoFijoController(dc.getConnection());
 
         int opcion = -1;
         while(opcion!=0) {
@@ -33,7 +34,7 @@ public class MainView {
                     menuPersonas(sc, personaController);
                     break;
                 case 3:
-                    System.out.println("Pendiente gastos");
+                    menuGastos(sc, gastoController);
                     break;
                 case 0:
                     System.out.println("Programa cerrado...");
@@ -207,6 +208,63 @@ public class MainView {
                 case 5: {
                     int codigo = leerEntero(sc, "Codigo de venta a eliminar: ");
                     controller.eliminar(codigo);
+                    break;
+                }
+                case 0:
+                    System.out.println("Volviendo...");
+                    break;
+                default:
+                    System.out.println("Opcion invalida");
+                    break;
+            }
+        }
+    }
+
+    private void menuGastos(Scanner sc, GastoFijoController controller) {
+        int opcion = -1;
+        while (opcion != 0) {
+            System.out.println("--- Menu de gastos fijos ---");
+            System.out.println("1. Registrar");
+            System.out.println("2. Listar");
+            System.out.println("3. Buscar");
+            System.out.println("4. Actualizar");
+            System.out.println("5. Eliminar");
+            System.out.println("0. Volver");
+            opcion = leerEntero(sc, "> ");
+
+            switch (opcion) {
+                case 1: {
+                    int tipo = leerEntero(sc, "Tipo (1=Implementos, 2=Combustible y peajes, 3=Agua y gas): ");
+                    double monto = leerDouble(sc, "Monto: ");
+                    System.out.print("Fecha (AAAA-MM-DD): ");
+                    String fecha = sc.next();
+
+                    GastoFijoModel gastoModel = new GastoFijoModel(0, tipo, fecha, monto);
+                    controller.registrar(gastoModel);
+                    break;
+                }
+                case 2:
+                    controller.listar();
+                    break;
+                case 3: {
+                    int id = leerEntero(sc, "Id del gasto: ");
+                    controller.buscarPorId(id);
+                    break;
+                }
+                case 4: {
+                    int id = leerEntero(sc, "Id del gasto a actualizar: ");
+                    int tipo = leerEntero(sc, "Tipo (1=Implementos, 2=Combustible y peajes, 3=Agua y gas): ");
+                    double monto = leerDouble(sc, "Monto: ");
+                    System.out.print("Fecha (AAAA-MM-DD): ");
+                    String fecha = sc.next();
+
+                    GastoFijoModel gastoModel = new GastoFijoModel(id, tipo, fecha, monto);
+                    controller.actualizar(gastoModel);
+                    break;
+                }
+                case 5: {
+                    int id = leerEntero(sc, "Id del gasto a eliminar: ");
+                    controller.eliminar(id);
                     break;
                 }
                 case 0:
