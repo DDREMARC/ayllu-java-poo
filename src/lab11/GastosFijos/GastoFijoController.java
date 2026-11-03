@@ -10,17 +10,30 @@ public class GastoFijoController {
         this.gastosModelo = new ArrayList<>();
     }
 
-    // La fecha no se envia: la columna tiene DEFAULT curdate() (fecha de hoy)
-    public void registrar(int idTipo, double monto) {
+    // Solo se aceptan los tipos 1, 2 y 3 (se revisa aqui, en un solo lugar)
+    private boolean tipoValido(int idTipo) {
+        if (idTipo >= 1 && idTipo <= 3) {
+            return true;
+        }
+        System.out.println("Tipo invalido. Use 1 (Implementos), 2 (Combustible y peajes) o 3 (Agua y gas)");
+        return false;
+    }
+
+    public void registrar(GastoFijoModel gastoModel) {
+        if (!tipoValido(gastoModel.getIdTipo())) {
+            return;
+        }
         try {
-            String query = "INSERT INTO gasto_fijo (id_tipo, monto) VALUES (?, ?)";
+            String query = "INSERT INTO gasto_fijo (id_tipo, fecha, monto) VALUES (?, ?, ?)";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, idTipo);
-            preparedStatement.setDouble(2, monto);
+            preparedStatement.setInt(1, gastoModel.getIdTipo());
+            preparedStatement.setString(2, gastoModel.getFecha());
+            preparedStatement.setDouble(3, gastoModel.getMonto());
 
             int filasCambiadas = preparedStatement.executeUpdate();
             if (filasCambiadas > 0) {
                 System.out.println("Se ha registrado con exito");
+                gastosModelo.add(gastoModel);
             } else {
                 System.out.println("No se hizo los cambios");
             }
@@ -78,13 +91,17 @@ public class GastoFijoController {
         }
     }
 
-    public void actualizar(int idGasto, int idTipo, double monto) {
+    public void actualizar(GastoFijoModel gastoModel) {
+        if (!tipoValido(gastoModel.getIdTipo())) {
+            return;
+        }
         try {
-            String query = "UPDATE gasto_fijo SET id_tipo = ?, monto = ? WHERE id_gasto = ?";
+            String query = "UPDATE gasto_fijo SET id_tipo = ?, fecha = ?, monto = ? WHERE id_gasto = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(query);
-            preparedStatement.setInt(1, idTipo);
-            preparedStatement.setDouble(2, monto);
-            preparedStatement.setInt(3, idGasto);
+            preparedStatement.setInt(1, gastoModel.getIdTipo());
+            preparedStatement.setString(2, gastoModel.getFecha());
+            preparedStatement.setDouble(3, gastoModel.getMonto());
+            preparedStatement.setInt(4, gastoModel.getIdGasto());
 
             int filasAfectadas = preparedStatement.executeUpdate();
             if (filasAfectadas > 0) {
