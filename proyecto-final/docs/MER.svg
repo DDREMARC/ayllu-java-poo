@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 670" width="1120" height="670" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1120" height="670" fill="#ffffff"/>
+
+  <text x="40" y="58" font-size="24" font-weight="700" fill="#1f2937">MER - Ayllu Pollos</text>
+  <text x="40" y="82" font-size="13" fill="#6b7280">Base de datos ayllu_pollos (proyecto final)</text>
+
+  <g stroke="#374151" stroke-width="1.6" fill="none">
+    <path d="M470 186 V214"/>
+    <path d="M454 230 H175 V300"/>
+    <path d="M470 246 V300"/>
+    <path d="M600 347 H650"/>
+    <path d="M770 347 H820"/>
+    <path d="M300 567 H350"/>
+    <path d="M470 567 H520"/>
+  </g>
+
+  <circle cx="470" cy="230" r="16" fill="#fef3c7" stroke="#374151" stroke-width="1.6"/>
+  <text x="470" y="235" font-size="14" font-weight="700" text-anchor="middle" fill="#1f2937">d</text>
+  <text x="494" y="226" font-size="12" fill="#6b7280">es_empleado = 1 / 0</text>
+
+  <g stroke="#374151" stroke-width="1.6">
+    <polygon points="650,347 710,317 770,347 710,377" fill="#fde68a"/>
+    <polygon points="350,567 410,537 470,567 410,597" fill="#fde68a"/>
+  </g>
+  <text x="710" y="352" font-size="13" font-weight="600" text-anchor="middle" fill="#1f2937">realiza</text>
+  <text x="410" y="572" font-size="13" font-weight="600" text-anchor="middle" fill="#1f2937">clasifica</text>
+
+  <g font-size="12" font-weight="600" fill="#b91c1c">
+    <text x="606" y="338">(0,N)</text>
+    <text x="776" y="338">(1,1)</text>
+    <text x="306" y="558">(0,N)</text>
+    <text x="476" y="558">(1,1)</text>
+  </g>
+
+  <g stroke="#374151" stroke-width="1.6">
+    <rect x="340" y="40" width="260" height="146" fill="#ffffff"/>
+    <rect x="340" y="40" width="260" height="34" fill="#1e3a5f"/>
+    <rect x="40" y="300" width="270" height="146" fill="#ffffff"/>
+    <rect x="40" y="300" width="270" height="34" fill="#2d6a4f"/>
+    <rect x="340" y="300" width="260" height="94" fill="#ffffff"/>
+    <rect x="340" y="300" width="260" height="34" fill="#2d6a4f"/>
+    <rect x="820" y="248" width="260" height="198" fill="#ffffff"/>
+    <rect x="820" y="248" width="260" height="34" fill="#8a4b08"/>
+    <rect x="40" y="520" width="260" height="94" fill="#ffffff"/>
+    <rect x="40" y="520" width="260" height="34" fill="#6b3fa0"/>
+    <rect x="520" y="494" width="260" height="146" fill="#ffffff"/>
+    <rect x="520" y="494" width="260" height="34" fill="#8a4b08"/>
+  </g>
+
+  <g font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">
+    <text x="470" y="62">PERSONA</text>
+    <text x="175" y="322">EMPLEADO</text>
+    <text x="470" y="322">CLIENTE</text>
+    <text x="950" y="270">VENTA</text>
+    <text x="170" y="542">TIPO_GASTO</text>
+    <text x="650" y="516">GASTO_FIJO</text>
+  </g>
+
+  <g font-size="13" fill="#1f2937">
+    <text x="356" y="92" font-weight="700" text-decoration="underline">codigo_persona</text>
+    <text x="356" y="118">nombre</text>
+    <text x="356" y="144">numero_telefono</text>
+    <text x="356" y="170">es_empleado</text>
+
+    <text x="56" y="352">cargo</text>
+    <text x="56" y="378">pago_por_dia</text>
+    <text x="56" y="404">dias_trabajados</text>
+    <text x="56" y="430">bono</text>
+
+    <text x="356" y="352">zona_residencia</text>
+    <text x="356" y="378">deuda_total</text>
+
+    <text x="836" y="300" font-weight="700" text-decoration="underline">Codigo_venta</text>
+    <text x="836" y="326">Precio</text>
+    <text x="836" y="352">Peso</text>
+    <text x="836" y="378">Pago_pollo</text>
+    <text x="836" y="404">Fecha</text>
+    <text x="836" y="430" font-style="italic">Codigo_Cliente (FK)</text>
+
+    <text x="56" y="572" font-weight="700" text-decoration="underline">id_tipo</text>
+    <text x="56" y="598">nombre</text>
+
+    <text x="536" y="546" font-weight="700" text-decoration="underline">id_gasto</text>
+    <text x="536" y="572" font-style="italic">id_tipo (FK)</text>
+    <text x="536" y="598">fecha</text>
+    <text x="536" y="624">monto</text>
+  </g>
+
+  <g>
+    <rect x="820" y="494" width="260" height="146" rx="6" fill="#f9fafb" stroke="#9ca3af" stroke-width="1.2"/>
+    <text x="836" y="518" font-size="13" font-weight="700" fill="#1f2937">Leyenda</text>
+    <text x="836" y="542" font-size="12" font-weight="700" text-decoration="underline" fill="#1f2937">subrayado</text>
+    <text x="910" y="542" font-size="12" fill="#374151">clave primaria (PK)</text>
+    <text x="836" y="566" font-size="12" font-style="italic" fill="#1f2937">cursiva</text>
+    <text x="910" y="566" font-size="12" fill="#374151">clave foranea (FK)</text>
+    <text x="836" y="590" font-size="12" font-weight="700" fill="#1f2937">d</text>
+    <text x="910" y="590" font-size="12" fill="#374151">especializacion disjunta</text>
+    <text x="836" y="614" font-size="12" font-weight="600" fill="#b91c1c">(min,max)</text>
+    <text x="910" y="614" font-size="12" fill="#374151">cardinalidad</text>
+  </g>
+</svg>

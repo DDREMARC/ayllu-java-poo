@@ -47,6 +47,8 @@ proyecto-final/
 
 ## 🗄️ Base de datos
 
+![MER de Ayllu Pollos](docs/MER.svg)
+
 | Tabla | Clave primaria | Campos |
 |---|---|---|
 | `personas` | `codigo_persona VARCHAR(20)` | nombre, numero_telefono, es_empleado (1/0), zona_residencia, deuda_total, cargo, pago_por_dia, dias_trabajados, bono |
