@@ -112,7 +112,10 @@ for (Movimiento m : movimientos) {
 }
 ```
 
-La planilla de empleados usa la interfaz `IReportable` (`reporteTexto()` + `reporteMonto()`).
+La interfaz `IReportable` la implementan `Empleado`, `Venta` y `GastoFijo`. Cada uno dice cuánto mueve en caja: la venta suma lo cobrado y el gasto y el sueldo restan. El reporte recorre una sola `List<IReportable>` y así obtiene la ganancia real:
+
+- **Ganancia real (caja)** = cobrado - gastos fijos - planilla.
+- **Ganancia proyectada** = vendido - gastos fijos - planilla.
 
 ## ✅ Reglas de negocio implementadas
 
@@ -120,6 +123,8 @@ La planilla de empleados usa la interfaz `IReportable` (`reporteTexto()` + `repo
 - Una venta solo se registra para un **cliente** existente; el monto pagado no puede superar el total.
 - Si el cliente paga menos del total, la diferencia se suma a su `deuda_total`. Al actualizar o eliminar la venta, la deuda se corrige.
 - No se puede eliminar un cliente que tiene ventas registradas (se avisa cuántas tiene).
+- La venta y el ajuste de deuda se guardan en una transacción: si uno falla, no se guarda ninguno.
+- No se aceptan valores negativos y las fechas se validan (mes y día reales).
 - Actualizar permite cambiar **todos** los campos del registro, no solo uno.
 - Toda lectura numérica se valida: si escriben letras, se vuelve a pedir.
 - El `Scanner` y la `Connection` se cierran al salir.

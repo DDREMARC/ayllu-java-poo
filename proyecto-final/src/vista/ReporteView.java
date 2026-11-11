@@ -2,6 +2,7 @@ package vista;
 
 import controlador.ReporteController;
 import controlador.VentaController;
+import modelo.Empleado;
 import modelo.IReportable;
 import modelo.Movimiento;
 import modelo.Venta;
@@ -26,11 +27,13 @@ public class ReporteView extends VistaBase {
             System.out.println("\n--- REPORTES ---");
             System.out.println("1. Movimientos y ganancia del negocio");
             System.out.println("2. Planilla de empleados");
+            System.out.println("3. Flujo de caja detallado");
             System.out.println("0. Regresar");
             opcion = getLector().leerEntero("Seleccione una opcion: ");
             switch (opcion) {
                 case 1: reporteGanancia(); break;
                 case 2: reportePlanilla(); break;
+                case 3: reporteFlujoDeCaja(); break;
                 case 0: break;
                 default: System.out.println("Opcion no valida.");
             }
@@ -48,30 +51,48 @@ public class ReporteView extends VistaBase {
             System.out.println("   " + m.mostrarMovimiento());
         }
         List<Venta> ventas = ventaController.listar();
-        double ingresos = reporteController.calcularIngresos(movimientos);
-        double egresos = reporteController.calcularEgresos(movimientos);
+        double vendido = reporteController.calcularIngresos(movimientos);
+        double gastos = reporteController.calcularEgresos(movimientos);
         double cobrado = reporteController.calcularCobrado(ventas);
         double pendiente = reporteController.calcularPendiente(ventas);
+        double planilla = reporteController.calcularPlanilla(reporteController.obtenerEmpleados());
+        double caja = reporteController.sumarFlujo(reporteController.obtenerFlujoDeCaja());
         System.out.println();
-        imprimirLinea("Total vendido:", ingresos);
+        imprimirLinea("Total vendido:", vendido);
         imprimirLinea("   - Cobrado:", cobrado);
         imprimirLinea("   - Pendiente:", pendiente);
-        imprimirLinea("Total gastos fijos:", egresos);
-        imprimirLinea("Ganancia real (caja):", cobrado - egresos);
-        imprimirLinea("Ganancia proyectada:", ingresos - egresos);
+        imprimirLinea("Gastos fijos:", gastos);
+        imprimirLinea("Planilla de empleados:", planilla);
+        imprimirLinea("Ganancia real (caja):", caja);
+        imprimirLinea("Ganancia proyectada:", vendido - gastos - planilla);
     }
 
     private void reportePlanilla() throws SQLException {
-        List<IReportable> planilla = reporteController.obtenerPlanilla();
-        if (planilla.isEmpty()) {
+        List<Empleado> empleados = reporteController.obtenerEmpleados();
+        if (empleados.isEmpty()) {
             System.out.println("No hay empleados registrados.");
             return;
         }
         System.out.println("\nPlanilla del mes:");
-        for (IReportable r : planilla) {
-            System.out.println("   " + r.reporteTexto() + ": " + formatoMonto(r.reporteMonto()));
+        for (Empleado e : empleados) {
+            System.out.println("   " + e.getNombre() + " (" + e.getCargo() + "): " + formatoMonto(e.calcularPago()));
         }
-        imprimirLinea("Total planilla:", reporteController.sumarReporte(planilla));
+        imprimirLinea("Total planilla:", reporteController.calcularPlanilla(empleados));
+    }
+
+    private void reporteFlujoDeCaja() throws SQLException {
+        List<IReportable> flujo = reporteController.obtenerFlujoDeCaja();
+        if (flujo.isEmpty()) {
+            System.out.println("No hay datos para el flujo de caja.");
+            return;
+        }
+        System.out.println("\nFlujo de caja (entra + / sale -):");
+        for (IReportable r : flujo) {
+            double monto = r.reporteMonto();
+            String signo = monto >= 0 ? "+" : "-";
+            System.out.println("   " + signo + " " + formatoMonto(Math.abs(monto)) + "   " + r.reporteTexto());
+        }
+        imprimirLinea("Saldo de caja:", reporteController.sumarFlujo(flujo));
     }
 
     private void imprimirLinea(String etiqueta, double monto) {

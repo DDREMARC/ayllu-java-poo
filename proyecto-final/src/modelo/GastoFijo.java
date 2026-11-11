@@ -43,12 +43,12 @@ public class GastoFijo extends Movimiento implements IReportable {
 
     @Override
     public String reporteTexto() {
-        return "Gasto fijo " + tipo.getNombre();
+        return "Gasto fijo " + tipo.getNombre() + " del " + getFecha();
     }
 
     @Override
     public double reporteMonto() {
-        return monto;
+        return -monto;
     }
 
     public void mostrarGasto() {

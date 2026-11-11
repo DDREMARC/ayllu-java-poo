@@ -65,11 +65,11 @@ public class Empleado extends Persona implements IReportable {
 
     @Override
     public String reporteTexto() {
-        return "Planilla " + getNombre() + " (" + cargo + ")";
+        return "Sueldo de " + getNombre() + " (" + cargo + ")";
     }
 
     @Override
     public double reporteMonto() {
-        return calcularPago();
+        return -calcularPago();
     }
 }

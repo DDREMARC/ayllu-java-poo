@@ -2,50 +2,66 @@ PROYECTO FINAL - SISTEMA AYLLU POLLOS
 =====================================
 
 1. CONTEXTO
-Curso: Programacion Orientada a Objetos en Java
-Institucion: Tecsup, Diseno y Desarrollo de Software
-Docente: Nilton Mercado Chavez
+Curso: Programación Orientada a Objetos en Java
+Institución: Tecsup, Diseño y Desarrollo de Software
+Docente: Nilton Mercado Chávez
 Grupo: Angel, Dan y Leo
 
-Nuestro negocio es la venta de pollos. Antes, el control de clientes, empleados, ventas y gastos se llevaba de forma desordenada, y no era facil saber cuanto se ganaba realmente. Este sistema guarda todo en una base de datos MySQL y calcula la ganancia automaticamente.
+Nuestro negocio es la venta de pollos. Antes, el control de clientes, empleados, ventas y gastos se llevaba de forma desordenada, y no era fácil saber cuánto se ganaba realmente. Este sistema guarda todo en una base de datos MySQL y calcula la ganancia automáticamente, descontando los gastos fijos y los sueldos de los empleados.
 
 2. OBJETIVO
 Unir en un solo sistema los temas vistos en el curso:
 - Laboratorio 9: clases abstractas (Persona, Movimiento), herencia, polimorfismo e interfaz (IReportable).
-- Laboratorio 10: conexion JDBC a MySQL, sentencias Statement, CRUD completo y script SQL.
-- Laboratorio 11: sentencias PreparedStatement y arquitectura MVC (Modelo, Vista, Controlador).
+- Laboratorio 10: conexión JDBC a MySQL, CRUD completo y script SQL.
+- Laboratorio 11: PreparedStatement y arquitectura MVC (Modelo, Vista, Controlador).
 
-3. BASE DE DATOS (ayllu_pollos)
+3. ¿STATEMENT O PREPAREDSTATEMENT?
+En el Laboratorio 10 usamos Statement y armábamos el SQL pegando los datos al texto:
+    "SELECT * FROM ventas WHERE Codigo_venta = " + codigo
+En este proyecto todo el acceso a datos usa PreparedStatement:
+    "SELECT * FROM ventas WHERE Codigo_venta = ?"  y luego  ps.setInt(1, codigo)
+
+Comparación:
+- Seguridad: con Statement, lo que escribe el usuario se mezcla con el SQL y puede cambiar la consulta (inyección SQL). Con PreparedStatement el dato viaja aparte y siempre se trata como dato.
+- Comillas y tipos: con Statement hay que poner comillas a mano en textos y fechas. Con PreparedStatement, setString, setInt y setDouble se encargan.
+- Errores: al concatenar es fácil olvidar una comilla o un espacio. Con PreparedStatement el SQL es un texto fijo y legible.
+- Rendimiento: PreparedStatement prepara la consulta una vez y solo cambia los valores.
+
+Conclusión: conviene PreparedStatement. En este sistema casi todos los datos los escribe una persona por teclado, así que es la opción segura. Statement solo sirve para consultas fijas que no reciben datos del usuario.
+
+4. BASE DE DATOS (ayllu_pollos)
 - personas: clientes y empleados en una sola tabla. Clave primaria codigo_persona. La columna es_empleado indica el tipo (1 empleado, 0 cliente).
-- tipo_gasto: catalogo de tipos de gasto fijo.
-- gasto_fijo: gastos del negocio. Clave primaria id_gasto. Clave foranea id_tipo hacia tipo_gasto.
-- ventas: ventas realizadas. Clave primaria Codigo_venta. Clave foranea Codigo_Cliente hacia personas.
-Diagrama entidad-relacion: proyecto-final/docs/MER.svg
+- tipo_gasto: catálogo de tipos de gasto fijo.
+- gasto_fijo: gastos del negocio. Clave primaria id_gasto. Clave foránea id_tipo hacia tipo_gasto.
+- ventas: ventas realizadas. Clave primaria Codigo_venta. Clave foránea Codigo_Cliente hacia personas.
+Diagrama entidad-relación: proyecto-final/docs/MER.svg
 
-4. ESTRUCTURA DEL CODIGO (arquitectura MVC)
-- modelo: representa las filas de las tablas. Persona y Movimiento son clases abstractas. Cliente y Empleado heredan de Persona. Venta y GastoFijo heredan de Movimiento. IReportable es una interfaz que usan Empleado, Venta y GastoFijo para el informe.
-- controlador: ejecuta el SQL con PreparedStatement y devuelve datos. No imprime nada. ReporteController calcula ganancias y planilla usando polimorfismo.
-- vista: muestra los menus, lee las opciones y muestra mensajes. Lector hace las lecturas seguras por consola.
-- conexion: DatabaseConnector abre y cierra la conexion a la base de datos.
+5. ESTRUCTURA DEL CÓDIGO (arquitectura MVC)
+- modelo: representa las filas de las tablas. Persona y Movimiento son clases abstractas. Cliente y Empleado heredan de Persona. Venta y GastoFijo heredan de Movimiento.
+- IReportable: interfaz que implementan Empleado, Venta y GastoFijo. Cada uno dice cuánto dinero mueve en caja: la venta suma lo cobrado, el gasto y el sueldo restan. El reporte recorre una sola lista de IReportable para sacar la ganancia real.
+- controlador: ejecuta el SQL con PreparedStatement y devuelve datos. No imprime nada. Cierra siempre ResultSet y PreparedStatement con finally.
+- vista: muestra los menús, lee las opciones y muestra mensajes. Lector hace las lecturas seguras por consola.
+- conexion: DatabaseConnector abre y cierra la conexión a la base de datos.
 
-5. REGLAS DE NEGOCIO
-- No se puede registrar una persona con un codigo que ya existe.
+6. REGLAS DE NEGOCIO
+- No se puede registrar una persona con un código que ya existe.
+- No se aceptan montos, precios, pesos ni días trabajados negativos.
+- Las fechas se validan: formato AAAA-MM-DD, mes de 01 a 12 y un día que exista en ese mes.
 - Una venta solo se registra para un cliente existente. El monto pagado no puede superar el total.
 - Si el cliente paga menos del total, la diferencia se suma a su deuda. Al actualizar o eliminar la venta, la deuda se corrige.
+- La venta y el ajuste de deuda se guardan juntos en una transacción: si uno falla, no se guarda ninguno.
 - No se puede eliminar un cliente que tiene ventas registradas.
-- Ganancia real (caja) = total cobrado - gastos fijos.
-- Ganancia proyectada = total vendido - gastos fijos.
-- Pago de planilla = dias trabajados x pago por dia + bono.
+- Pago de planilla = días trabajados x pago por día + bono.
+- Ganancia real (caja) = total cobrado - gastos fijos - planilla.
+- Ganancia proyectada = total vendido - gastos fijos - planilla.
 
-6. COMO EJECUTAR
+7. CÓMO EJECUTAR
 1. Iniciar MySQL o MariaDB (XAMPP).
 2. Ejecutar sql/script_ayllu_pollos.sql en phpMyAdmin.
-3. Ejecutar ejecutar.bat. Compila el proyecto y arranca el programa. El driver de MySQL esta en lib/.
+3. Ejecutar ejecutar.bat. Compila el proyecto y arranca el programa. El driver de MySQL está en lib/.
 
-7. CONTENIDO DE ESTE DOCUMENTO
+8. CONTENIDO DE ESTE DOCUMENTO
 Este documento contiene el contexto, todas las clases Java del proyecto y el script SQL, en ese orden.
-
-
 
 
 ===================================================================
@@ -524,19 +540,35 @@ public class ReporteController {
         return total;
     }
 
-    public List<IReportable> obtenerPlanilla() throws SQLException {
-        List<IReportable> planilla = new ArrayList<>();
+    public List<Empleado> obtenerEmpleados() throws SQLException {
+        List<Empleado> empleados = new ArrayList<>();
         for (Persona p : personaController.listar()) {
             if (p instanceof Empleado) {
-                planilla.add((Empleado) p);
+                empleados.add((Empleado) p);
             }
         }
-        return planilla;
+        return empleados;
     }
 
-    public double sumarReporte(List<IReportable> items) {
+    public double calcularPlanilla(List<Empleado> empleados) {
         double total = 0;
-        for (IReportable r : items) {
+        for (Empleado e : empleados) {
+            total += e.calcularPago();
+        }
+        return total;
+    }
+
+    public List<IReportable> obtenerFlujoDeCaja() throws SQLException {
+        List<IReportable> flujo = new ArrayList<>();
+        flujo.addAll(ventaController.listar());
+        flujo.addAll(gastoController.listar());
+        flujo.addAll(obtenerEmpleados());
+        return flujo;
+    }
+
+    public double sumarFlujo(List<IReportable> flujo) {
+        double total = 0;
+        for (IReportable r : flujo) {
             total += r.reporteMonto();
         }
         return total;
@@ -621,8 +653,70 @@ public class VentaController {
     }
 
     public int registrar(Venta venta) throws SQLException {
+        boolean autoCommitOriginal = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            int filas = insertarVenta(venta);
+            if (filas > 0 && venta.calcularDeuda() > 0) {
+                ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
+            }
+            connection.commit();
+            return filas;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(autoCommitOriginal);
+        }
+    }
+
+    public int actualizar(Venta venta) throws SQLException {
+        Venta anterior = buscar(venta.getId());
+        if (anterior == null) {
+            return 0;
+        }
+        boolean autoCommitOriginal = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            int filas = modificarVenta(venta);
+            if (filas > 0) {
+                ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
+                ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
+            }
+            connection.commit();
+            return filas;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(autoCommitOriginal);
+        }
+    }
+
+    public int eliminar(int codigoVenta) throws SQLException {
+        Venta anterior = buscar(codigoVenta);
+        if (anterior == null) {
+            return 0;
+        }
+        boolean autoCommitOriginal = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            int filas = borrarVenta(codigoVenta);
+            if (filas > 0) {
+                ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
+            }
+            connection.commit();
+            return filas;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(autoCommitOriginal);
+        }
+    }
+
+    private int insertarVenta(Venta venta) throws SQLException {
         String sql = "INSERT INTO ventas (Precio, Peso, Pago_pollo, Fecha, Codigo_Cliente) VALUES (?, ?, ?, ?, ?)";
-        int filas;
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql);
@@ -631,26 +725,17 @@ public class VentaController {
             ps.setDouble(3, venta.getMontoPagado());
             ps.setString(4, venta.getFecha());
             ps.setString(5, venta.getCliente().getCodigoPersona());
-            filas = ps.executeUpdate();
+            return ps.executeUpdate();
         } finally {
             if (ps != null) {
                 ps.close();
             }
         }
-        if (filas > 0 && venta.calcularDeuda() > 0) {
-            ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
-        }
-        return filas;
     }
 
-    public int actualizar(Venta venta) throws SQLException {
-        Venta anterior = buscar(venta.getId());
-        if (anterior == null) {
-            return 0;
-        }
+    private int modificarVenta(Venta venta) throws SQLException {
         String sql = "UPDATE ventas SET Precio = ?, Peso = ?, Pago_pollo = ?, Fecha = ?, Codigo_Cliente = ? "
                 + "WHERE Codigo_venta = ?";
-        int filas;
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql);
@@ -660,40 +745,25 @@ public class VentaController {
             ps.setString(4, venta.getFecha());
             ps.setString(5, venta.getCliente().getCodigoPersona());
             ps.setInt(6, venta.getId());
-            filas = ps.executeUpdate();
+            return ps.executeUpdate();
         } finally {
             if (ps != null) {
                 ps.close();
             }
         }
-        if (filas > 0) {
-            ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
-            ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
-        }
-        return filas;
     }
 
-    public int eliminar(int codigoVenta) throws SQLException {
-        Venta anterior = buscar(codigoVenta);
-        if (anterior == null) {
-            return 0;
-        }
-        String sql = "DELETE FROM ventas WHERE Codigo_venta = ?";
-        int filas;
+    private int borrarVenta(int codigoVenta) throws SQLException {
         PreparedStatement ps = null;
         try {
-            ps = connection.prepareStatement(sql);
+            ps = connection.prepareStatement("DELETE FROM ventas WHERE Codigo_venta = ?");
             ps.setInt(1, codigoVenta);
-            filas = ps.executeUpdate();
+            return ps.executeUpdate();
         } finally {
             if (ps != null) {
                 ps.close();
             }
         }
-        if (filas > 0) {
-            ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
-        }
-        return filas;
     }
 
     private void ajustarDeuda(String codigoCliente, double diferencia) throws SQLException {
@@ -834,12 +904,12 @@ public class Empleado extends Persona implements IReportable {
 
     @Override
     public String reporteTexto() {
-        return "Planilla " + getNombre() + " (" + cargo + ")";
+        return "Sueldo de " + getNombre() + " (" + cargo + ")";
     }
 
     @Override
     public double reporteMonto() {
-        return calcularPago();
+        return -calcularPago();
     }
 }
 
@@ -892,12 +962,12 @@ public class GastoFijo extends Movimiento implements IReportable {
 
     @Override
     public String reporteTexto() {
-        return "Gasto fijo " + tipo.getNombre();
+        return "Gasto fijo " + tipo.getNombre() + " del " + getFecha();
     }
 
     @Override
     public double reporteMonto() {
-        return monto;
+        return -monto;
     }
 
     public void mostrarGasto() {
@@ -1108,7 +1178,7 @@ public class Venta extends Movimiento implements IReportable {
 
     @Override
     public String reporteTexto() {
-        return "Venta #" + getId() + " - " + cliente.getNombre() + " - cobrado";
+        return "Cobro de venta #" + getId() + " a " + cliente.getNombre();
     }
 
     @Override
@@ -1583,6 +1653,7 @@ package vista;
 
 import controlador.ReporteController;
 import controlador.VentaController;
+import modelo.Empleado;
 import modelo.IReportable;
 import modelo.Movimiento;
 import modelo.Venta;
@@ -1607,11 +1678,13 @@ public class ReporteView extends VistaBase {
             System.out.println("\n--- REPORTES ---");
             System.out.println("1. Movimientos y ganancia del negocio");
             System.out.println("2. Planilla de empleados");
+            System.out.println("3. Flujo de caja detallado");
             System.out.println("0. Regresar");
             opcion = getLector().leerEntero("Seleccione una opcion: ");
             switch (opcion) {
                 case 1: reporteGanancia(); break;
                 case 2: reportePlanilla(); break;
+                case 3: reporteFlujoDeCaja(); break;
                 case 0: break;
                 default: System.out.println("Opcion no valida.");
             }
@@ -1629,30 +1702,48 @@ public class ReporteView extends VistaBase {
             System.out.println("   " + m.mostrarMovimiento());
         }
         List<Venta> ventas = ventaController.listar();
-        double ingresos = reporteController.calcularIngresos(movimientos);
-        double egresos = reporteController.calcularEgresos(movimientos);
+        double vendido = reporteController.calcularIngresos(movimientos);
+        double gastos = reporteController.calcularEgresos(movimientos);
         double cobrado = reporteController.calcularCobrado(ventas);
         double pendiente = reporteController.calcularPendiente(ventas);
+        double planilla = reporteController.calcularPlanilla(reporteController.obtenerEmpleados());
+        double caja = reporteController.sumarFlujo(reporteController.obtenerFlujoDeCaja());
         System.out.println();
-        imprimirLinea("Total vendido:", ingresos);
+        imprimirLinea("Total vendido:", vendido);
         imprimirLinea("   - Cobrado:", cobrado);
         imprimirLinea("   - Pendiente:", pendiente);
-        imprimirLinea("Total gastos fijos:", egresos);
-        imprimirLinea("Ganancia real (caja):", cobrado - egresos);
-        imprimirLinea("Ganancia proyectada:", ingresos - egresos);
+        imprimirLinea("Gastos fijos:", gastos);
+        imprimirLinea("Planilla de empleados:", planilla);
+        imprimirLinea("Ganancia real (caja):", caja);
+        imprimirLinea("Ganancia proyectada:", vendido - gastos - planilla);
     }
 
     private void reportePlanilla() throws SQLException {
-        List<IReportable> planilla = reporteController.obtenerPlanilla();
-        if (planilla.isEmpty()) {
+        List<Empleado> empleados = reporteController.obtenerEmpleados();
+        if (empleados.isEmpty()) {
             System.out.println("No hay empleados registrados.");
             return;
         }
         System.out.println("\nPlanilla del mes:");
-        for (IReportable r : planilla) {
-            System.out.println("   " + r.reporteTexto() + ": " + formatoMonto(r.reporteMonto()));
+        for (Empleado e : empleados) {
+            System.out.println("   " + e.getNombre() + " (" + e.getCargo() + "): " + formatoMonto(e.calcularPago()));
         }
-        imprimirLinea("Total planilla:", reporteController.sumarReporte(planilla));
+        imprimirLinea("Total planilla:", reporteController.calcularPlanilla(empleados));
+    }
+
+    private void reporteFlujoDeCaja() throws SQLException {
+        List<IReportable> flujo = reporteController.obtenerFlujoDeCaja();
+        if (flujo.isEmpty()) {
+            System.out.println("No hay datos para el flujo de caja.");
+            return;
+        }
+        System.out.println("\nFlujo de caja (entra + / sale -):");
+        for (IReportable r : flujo) {
+            double monto = r.reporteMonto();
+            String signo = monto >= 0 ? "+" : "-";
+            System.out.println("   " + signo + " " + formatoMonto(Math.abs(monto)) + "   " + r.reporteTexto());
+        }
+        imprimirLinea("Saldo de caja:", reporteController.sumarFlujo(flujo));
     }
 
     private void imprimirLinea(String etiqueta, double monto) {

@@ -72,8 +72,70 @@ public class VentaController {
     }
 
     public int registrar(Venta venta) throws SQLException {
+        boolean autoCommitOriginal = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            int filas = insertarVenta(venta);
+            if (filas > 0 && venta.calcularDeuda() > 0) {
+                ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
+            }
+            connection.commit();
+            return filas;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(autoCommitOriginal);
+        }
+    }
+
+    public int actualizar(Venta venta) throws SQLException {
+        Venta anterior = buscar(venta.getId());
+        if (anterior == null) {
+            return 0;
+        }
+        boolean autoCommitOriginal = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            int filas = modificarVenta(venta);
+            if (filas > 0) {
+                ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
+                ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
+            }
+            connection.commit();
+            return filas;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(autoCommitOriginal);
+        }
+    }
+
+    public int eliminar(int codigoVenta) throws SQLException {
+        Venta anterior = buscar(codigoVenta);
+        if (anterior == null) {
+            return 0;
+        }
+        boolean autoCommitOriginal = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            int filas = borrarVenta(codigoVenta);
+            if (filas > 0) {
+                ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
+            }
+            connection.commit();
+            return filas;
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(autoCommitOriginal);
+        }
+    }
+
+    private int insertarVenta(Venta venta) throws SQLException {
         String sql = "INSERT INTO ventas (Precio, Peso, Pago_pollo, Fecha, Codigo_Cliente) VALUES (?, ?, ?, ?, ?)";
-        int filas;
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql);
@@ -82,26 +144,17 @@ public class VentaController {
             ps.setDouble(3, venta.getMontoPagado());
             ps.setString(4, venta.getFecha());
             ps.setString(5, venta.getCliente().getCodigoPersona());
-            filas = ps.executeUpdate();
+            return ps.executeUpdate();
         } finally {
             if (ps != null) {
                 ps.close();
             }
         }
-        if (filas > 0 && venta.calcularDeuda() > 0) {
-            ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
-        }
-        return filas;
     }
 
-    public int actualizar(Venta venta) throws SQLException {
-        Venta anterior = buscar(venta.getId());
-        if (anterior == null) {
-            return 0;
-        }
+    private int modificarVenta(Venta venta) throws SQLException {
         String sql = "UPDATE ventas SET Precio = ?, Peso = ?, Pago_pollo = ?, Fecha = ?, Codigo_Cliente = ? "
                 + "WHERE Codigo_venta = ?";
-        int filas;
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql);
@@ -111,40 +164,25 @@ public class VentaController {
             ps.setString(4, venta.getFecha());
             ps.setString(5, venta.getCliente().getCodigoPersona());
             ps.setInt(6, venta.getId());
-            filas = ps.executeUpdate();
+            return ps.executeUpdate();
         } finally {
             if (ps != null) {
                 ps.close();
             }
         }
-        if (filas > 0) {
-            ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
-            ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
-        }
-        return filas;
     }
 
-    public int eliminar(int codigoVenta) throws SQLException {
-        Venta anterior = buscar(codigoVenta);
-        if (anterior == null) {
-            return 0;
-        }
-        String sql = "DELETE FROM ventas WHERE Codigo_venta = ?";
-        int filas;
+    private int borrarVenta(int codigoVenta) throws SQLException {
         PreparedStatement ps = null;
         try {
-            ps = connection.prepareStatement(sql);
+            ps = connection.prepareStatement("DELETE FROM ventas WHERE Codigo_venta = ?");
             ps.setInt(1, codigoVenta);
-            filas = ps.executeUpdate();
+            return ps.executeUpdate();
         } finally {
             if (ps != null) {
                 ps.close();
             }
         }
-        if (filas > 0) {
-            ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
-        }
-        return filas;
     }
 
     private void ajustarDeuda(String codigoCliente, double diferencia) throws SQLException {

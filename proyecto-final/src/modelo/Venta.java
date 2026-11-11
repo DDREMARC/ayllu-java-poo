@@ -68,7 +68,7 @@ public class Venta extends Movimiento implements IReportable {
 
     @Override
     public String reporteTexto() {
-        return "Venta #" + getId() + " - " + cliente.getNombre() + " - cobrado";
+        return "Cobro de venta #" + getId() + " a " + cliente.getNombre();
     }
 
     @Override

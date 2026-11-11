@@ -65,19 +65,35 @@ public class ReporteController {
         return total;
     }
 
-    public List<IReportable> obtenerPlanilla() throws SQLException {
-        List<IReportable> planilla = new ArrayList<>();
+    public List<Empleado> obtenerEmpleados() throws SQLException {
+        List<Empleado> empleados = new ArrayList<>();
         for (Persona p : personaController.listar()) {
             if (p instanceof Empleado) {
-                planilla.add((Empleado) p);
+                empleados.add((Empleado) p);
             }
         }
-        return planilla;
+        return empleados;
     }
 
-    public double sumarReporte(List<IReportable> items) {
+    public double calcularPlanilla(List<Empleado> empleados) {
         double total = 0;
-        for (IReportable r : items) {
+        for (Empleado e : empleados) {
+            total += e.calcularPago();
+        }
+        return total;
+    }
+
+    public List<IReportable> obtenerFlujoDeCaja() throws SQLException {
+        List<IReportable> flujo = new ArrayList<>();
+        flujo.addAll(ventaController.listar());
+        flujo.addAll(gastoController.listar());
+        flujo.addAll(obtenerEmpleados());
+        return flujo;
+    }
+
+    public double sumarFlujo(List<IReportable> flujo) {
+        double total = 0;
+        for (IReportable r : flujo) {
             total += r.reporteMonto();
         }
         return total;
