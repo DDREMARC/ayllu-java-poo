@@ -31,39 +31,63 @@ public class VentaController {
 
     public List<Venta> listar() throws SQLException {
         List<Venta> lista = new ArrayList<>();
-        PreparedStatement ps = connection.prepareStatement(SELECT_BASE + "ORDER BY v.Fecha, v.Codigo_venta");
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            lista.add(construir(rs));
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(SELECT_BASE + "ORDER BY v.Fecha, v.Codigo_venta");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                lista.add(construir(rs));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
         }
-        rs.close();
-        ps.close();
         return lista;
     }
 
     public Venta buscar(int codigoVenta) throws SQLException {
-        PreparedStatement ps = connection.prepareStatement(SELECT_BASE + "WHERE v.Codigo_venta = ?");
-        ps.setInt(1, codigoVenta);
-        ResultSet rs = ps.executeQuery();
-        Venta venta = null;
-        if (rs.next()) {
-            venta = construir(rs);
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(SELECT_BASE + "WHERE v.Codigo_venta = ?");
+            ps.setInt(1, codigoVenta);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return construir(rs);
+            }
+            return null;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
         }
-        rs.close();
-        ps.close();
-        return venta;
     }
 
     public int registrar(Venta venta) throws SQLException {
         String sql = "INSERT INTO ventas (Precio, Peso, Pago_pollo, Fecha, Codigo_Cliente) VALUES (?, ?, ?, ?, ?)";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setDouble(1, venta.getPrecioKg());
-        ps.setDouble(2, venta.getPesoKg());
-        ps.setDouble(3, venta.getMontoPagado());
-        ps.setString(4, venta.getFecha());
-        ps.setString(5, venta.getCliente().getCodigoPersona());
-        int filas = ps.executeUpdate();
-        ps.close();
+        int filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setDouble(1, venta.getPrecioKg());
+            ps.setDouble(2, venta.getPesoKg());
+            ps.setDouble(3, venta.getMontoPagado());
+            ps.setString(4, venta.getFecha());
+            ps.setString(5, venta.getCliente().getCodigoPersona());
+            filas = ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
         if (filas > 0 && venta.calcularDeuda() > 0) {
             ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
         }
@@ -77,15 +101,22 @@ public class VentaController {
         }
         String sql = "UPDATE ventas SET Precio = ?, Peso = ?, Pago_pollo = ?, Fecha = ?, Codigo_Cliente = ? "
                 + "WHERE Codigo_venta = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setDouble(1, venta.getPrecioKg());
-        ps.setDouble(2, venta.getPesoKg());
-        ps.setDouble(3, venta.getMontoPagado());
-        ps.setString(4, venta.getFecha());
-        ps.setString(5, venta.getCliente().getCodigoPersona());
-        ps.setInt(6, venta.getId());
-        int filas = ps.executeUpdate();
-        ps.close();
+        int filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setDouble(1, venta.getPrecioKg());
+            ps.setDouble(2, venta.getPesoKg());
+            ps.setDouble(3, venta.getMontoPagado());
+            ps.setString(4, venta.getFecha());
+            ps.setString(5, venta.getCliente().getCodigoPersona());
+            ps.setInt(6, venta.getId());
+            filas = ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
         if (filas > 0) {
             ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
             ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
@@ -99,10 +130,17 @@ public class VentaController {
             return 0;
         }
         String sql = "DELETE FROM ventas WHERE Codigo_venta = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setInt(1, codigoVenta);
-        int filas = ps.executeUpdate();
-        ps.close();
+        int filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, codigoVenta);
+            filas = ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
         if (filas > 0) {
             ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
         }
@@ -114,10 +152,16 @@ public class VentaController {
             return;
         }
         String sql = "UPDATE personas SET deuda_total = GREATEST(deuda_total + ?, 0) WHERE codigo_persona = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setDouble(1, diferencia);
-        ps.setString(2, codigoCliente);
-        ps.executeUpdate();
-        ps.close();
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setDouble(1, diferencia);
+            ps.setString(2, codigoCliente);
+            ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
     }
 }

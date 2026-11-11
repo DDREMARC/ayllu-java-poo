@@ -55,7 +55,7 @@ public class PersonaView extends VistaBase {
         if (esEmpleado) {
             String cargo = lector.leerTexto("Cargo: ");
             double pagoPorDia = lector.leerDecimal("Pago por dia: ");
-            int dias = lector.leerEntero("Dias trabajados: ");
+            int dias = lector.leerEnteroNoNegativo("Dias trabajados: ");
             double bono = lector.leerDecimal("Bono: ");
             persona = new Empleado(codigo, nombre, telefono, cargo, pagoPorDia, dias, bono);
         } else {
@@ -105,7 +105,7 @@ public class PersonaView extends VistaBase {
             Empleado e = (Empleado) actual;
             e.setCargo(lector.leerTexto("Cargo: "));
             e.setPagoPorDia(lector.leerDecimal("Pago por dia: "));
-            e.setDiasTrabajados(lector.leerEntero("Dias trabajados: "));
+            e.setDiasTrabajados(lector.leerEnteroNoNegativo("Dias trabajados: "));
             e.setBono(lector.leerDecimal("Bono: "));
         } else {
             Cliente c = (Cliente) actual;

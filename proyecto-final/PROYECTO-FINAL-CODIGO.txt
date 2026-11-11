@@ -1,0 +1,1927 @@
+PROYECTO FINAL - SISTEMA AYLLU POLLOS
+=====================================
+
+1. CONTEXTO
+Curso: Programacion Orientada a Objetos en Java
+Institucion: Tecsup, Diseno y Desarrollo de Software
+Docente: Nilton Mercado Chavez
+Grupo: Angel, Dan y Leo
+
+Nuestro negocio es la venta de pollos. Antes, el control de clientes, empleados, ventas y gastos se llevaba de forma desordenada, y no era facil saber cuanto se ganaba realmente. Este sistema guarda todo en una base de datos MySQL y calcula la ganancia automaticamente.
+
+2. OBJETIVO
+Unir en un solo sistema los temas vistos en el curso:
+- Laboratorio 9: clases abstractas (Persona, Movimiento), herencia, polimorfismo e interfaz (IReportable).
+- Laboratorio 10: conexion JDBC a MySQL, sentencias Statement, CRUD completo y script SQL.
+- Laboratorio 11: sentencias PreparedStatement y arquitectura MVC (Modelo, Vista, Controlador).
+
+3. BASE DE DATOS (ayllu_pollos)
+- personas: clientes y empleados en una sola tabla. Clave primaria codigo_persona. La columna es_empleado indica el tipo (1 empleado, 0 cliente).
+- tipo_gasto: catalogo de tipos de gasto fijo.
+- gasto_fijo: gastos del negocio. Clave primaria id_gasto. Clave foranea id_tipo hacia tipo_gasto.
+- ventas: ventas realizadas. Clave primaria Codigo_venta. Clave foranea Codigo_Cliente hacia personas.
+Diagrama entidad-relacion: proyecto-final/docs/MER.svg
+
+4. ESTRUCTURA DEL CODIGO (arquitectura MVC)
+- modelo: representa las filas de las tablas. Persona y Movimiento son clases abstractas. Cliente y Empleado heredan de Persona. Venta y GastoFijo heredan de Movimiento. IReportable es una interfaz que usan Empleado, Venta y GastoFijo para el informe.
+- controlador: ejecuta el SQL con PreparedStatement y devuelve datos. No imprime nada. ReporteController calcula ganancias y planilla usando polimorfismo.
+- vista: muestra los menus, lee las opciones y muestra mensajes. Lector hace las lecturas seguras por consola.
+- conexion: DatabaseConnector abre y cierra la conexion a la base de datos.
+
+5. REGLAS DE NEGOCIO
+- No se puede registrar una persona con un codigo que ya existe.
+- Una venta solo se registra para un cliente existente. El monto pagado no puede superar el total.
+- Si el cliente paga menos del total, la diferencia se suma a su deuda. Al actualizar o eliminar la venta, la deuda se corrige.
+- No se puede eliminar un cliente que tiene ventas registradas.
+- Ganancia real (caja) = total cobrado - gastos fijos.
+- Ganancia proyectada = total vendido - gastos fijos.
+- Pago de planilla = dias trabajados x pago por dia + bono.
+
+6. COMO EJECUTAR
+1. Iniciar MySQL o MariaDB (XAMPP).
+2. Ejecutar sql/script_ayllu_pollos.sql en phpMyAdmin.
+3. Ejecutar ejecutar.bat. Compila el proyecto y arranca el programa. El driver de MySQL esta en lib/.
+
+7. CONTENIDO DE ESTE DOCUMENTO
+Este documento contiene el contexto, todas las clases Java del proyecto y el script SQL, en ese orden.
+
+
+
+
+===================================================================
+ARCHIVO: src/ProyectoFinalMain.java
+===================================================================
+import vista.MainView;
+
+public class ProyectoFinalMain {
+    public static void main(String[] args) {
+        MainView vista = new MainView();
+        vista.ejecutar();
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/conexion/DatabaseConnector.java
+===================================================================
+package conexion;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class DatabaseConnector {
+    private static final String URL = "jdbc:mysql://localhost:3306/ayllu_pollos";
+    private static final String USUARIO = "root";
+    private static final String CONTRASENA = "";
+
+    private Connection connection;
+
+    public void abrirConexion() throws SQLException {
+        connection = DriverManager.getConnection(URL, USUARIO, CONTRASENA);
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void cerrarConexion() {
+        if (connection != null) {
+            try {
+                connection.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar la conexion: " + e.getMessage());
+            }
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/controlador/GastoFijoController.java
+===================================================================
+package controlador;
+
+import modelo.GastoFijo;
+import modelo.TipoGasto;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class GastoFijoController {
+    private Connection connection;
+
+    private static final String SELECT_BASE =
+            "SELECT g.id_gasto, g.fecha, g.monto, t.id_tipo, t.nombre "
+            + "FROM gasto_fijo g INNER JOIN tipo_gasto t ON g.id_tipo = t.id_tipo ";
+
+    public GastoFijoController(Connection connection) {
+        this.connection = connection;
+    }
+
+    private GastoFijo construir(ResultSet rs) throws SQLException {
+        TipoGasto tipo = new TipoGasto(rs.getInt("id_tipo"), rs.getString("nombre"));
+        return new GastoFijo(rs.getInt("id_gasto"), rs.getString("fecha"), tipo, rs.getDouble("monto"));
+    }
+
+    public List<TipoGasto> listarTipos() throws SQLException {
+        List<TipoGasto> tipos = new ArrayList<>();
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement("SELECT id_tipo, nombre FROM tipo_gasto ORDER BY id_tipo");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                tipos.add(new TipoGasto(rs.getInt("id_tipo"), rs.getString("nombre")));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        return tipos;
+    }
+
+    public TipoGasto buscarTipo(int idTipo) throws SQLException {
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement("SELECT id_tipo, nombre FROM tipo_gasto WHERE id_tipo = ?");
+            ps.setInt(1, idTipo);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return new TipoGasto(rs.getInt("id_tipo"), rs.getString("nombre"));
+            }
+            return null;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public List<GastoFijo> listar() throws SQLException {
+        List<GastoFijo> lista = new ArrayList<>();
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(SELECT_BASE + "ORDER BY g.fecha, g.id_gasto");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                lista.add(construir(rs));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        return lista;
+    }
+
+    public GastoFijo buscar(int idGasto) throws SQLException {
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(SELECT_BASE + "WHERE g.id_gasto = ?");
+            ps.setInt(1, idGasto);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return construir(rs);
+            }
+            return null;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int registrar(GastoFijo gasto) throws SQLException {
+        String sql = "INSERT INTO gasto_fijo (id_tipo, fecha, monto) VALUES (?, ?, ?)";
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, gasto.getTipo().getIdTipo());
+            ps.setString(2, gasto.getFecha());
+            ps.setDouble(3, gasto.getMonto());
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int actualizar(GastoFijo gasto) throws SQLException {
+        String sql = "UPDATE gasto_fijo SET id_tipo = ?, fecha = ?, monto = ? WHERE id_gasto = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, gasto.getTipo().getIdTipo());
+            ps.setString(2, gasto.getFecha());
+            ps.setDouble(3, gasto.getMonto());
+            ps.setInt(4, gasto.getId());
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int eliminar(int idGasto) throws SQLException {
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement("DELETE FROM gasto_fijo WHERE id_gasto = ?");
+            ps.setInt(1, idGasto);
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/controlador/PersonaController.java
+===================================================================
+package controlador;
+
+import modelo.Cliente;
+import modelo.Empleado;
+import modelo.Persona;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class PersonaController {
+    private Connection connection;
+
+    public PersonaController(Connection connection) {
+        this.connection = connection;
+    }
+
+    private Persona construir(ResultSet rs) throws SQLException {
+        String codigo = rs.getString("codigo_persona");
+        String nombre = rs.getString("nombre");
+        String telefono = rs.getString("numero_telefono");
+        if (rs.getInt("es_empleado") == 1) {
+            return new Empleado(codigo, nombre, telefono,
+                    rs.getString("cargo"), rs.getDouble("pago_por_dia"),
+                    rs.getInt("dias_trabajados"), rs.getDouble("bono"));
+        }
+        return new Cliente(codigo, nombre, telefono,
+                rs.getString("zona_residencia"), rs.getDouble("deuda_total"));
+    }
+
+    public List<Persona> listar() throws SQLException {
+        List<Persona> lista = new ArrayList<>();
+        String sql = "SELECT * FROM personas ORDER BY es_empleado, codigo_persona";
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                lista.add(construir(rs));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        return lista;
+    }
+
+    public Persona buscar(String codigo) throws SQLException {
+        String sql = "SELECT * FROM personas WHERE codigo_persona = ?";
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, codigo);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return construir(rs);
+            }
+            return null;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public Cliente buscarCliente(String codigo) throws SQLException {
+        Persona p = buscar(codigo);
+        if (p instanceof Cliente) {
+            return (Cliente) p;
+        }
+        return null;
+    }
+
+    public int registrar(Persona persona) throws SQLException {
+        PreparedStatement ps = null;
+        try {
+            if (persona.esEmpleado()) {
+                Empleado e = (Empleado) persona;
+                String sql = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, "
+                        + "cargo, pago_por_dia, dias_trabajados, bono) VALUES (?, ?, ?, 1, ?, ?, ?, ?)";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, e.getCodigoPersona());
+                ps.setString(2, e.getNombre());
+                ps.setString(3, e.getNumeroTelefono());
+                ps.setString(4, e.getCargo());
+                ps.setDouble(5, e.getPagoPorDia());
+                ps.setInt(6, e.getDiasTrabajados());
+                ps.setDouble(7, e.getBono());
+            } else {
+                Cliente c = (Cliente) persona;
+                String sql = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, "
+                        + "zona_residencia, deuda_total) VALUES (?, ?, ?, 0, ?, ?)";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, c.getCodigoPersona());
+                ps.setString(2, c.getNombre());
+                ps.setString(3, c.getNumeroTelefono());
+                ps.setString(4, c.getZonaResidencia());
+                ps.setDouble(5, c.getDeudaTotal());
+            }
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int actualizar(Persona persona) throws SQLException {
+        PreparedStatement ps = null;
+        try {
+            if (persona.esEmpleado()) {
+                Empleado e = (Empleado) persona;
+                String sql = "UPDATE personas SET nombre = ?, numero_telefono = ?, cargo = ?, pago_por_dia = ?, "
+                        + "dias_trabajados = ?, bono = ? WHERE codigo_persona = ? AND es_empleado = 1";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, e.getNombre());
+                ps.setString(2, e.getNumeroTelefono());
+                ps.setString(3, e.getCargo());
+                ps.setDouble(4, e.getPagoPorDia());
+                ps.setInt(5, e.getDiasTrabajados());
+                ps.setDouble(6, e.getBono());
+                ps.setString(7, e.getCodigoPersona());
+            } else {
+                Cliente c = (Cliente) persona;
+                String sql = "UPDATE personas SET nombre = ?, numero_telefono = ?, zona_residencia = ?, "
+                        + "deuda_total = ? WHERE codigo_persona = ? AND es_empleado = 0";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, c.getNombre());
+                ps.setString(2, c.getNumeroTelefono());
+                ps.setString(3, c.getZonaResidencia());
+                ps.setDouble(4, c.getDeudaTotal());
+                ps.setString(5, c.getCodigoPersona());
+            }
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int eliminar(String codigo) throws SQLException {
+        String sql = "DELETE FROM personas WHERE codigo_persona = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, codigo);
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int contarVentas(String codigoCliente) throws SQLException {
+        String sql = "SELECT COUNT(*) AS total FROM ventas WHERE Codigo_Cliente = ?";
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, codigoCliente);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            return 0;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/controlador/ReporteController.java
+===================================================================
+package controlador;
+
+import modelo.Empleado;
+import modelo.IReportable;
+import modelo.Movimiento;
+import modelo.Persona;
+import modelo.Venta;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ReporteController {
+    private VentaController ventaController;
+    private GastoFijoController gastoController;
+    private PersonaController personaController;
+
+    public ReporteController(VentaController ventaController, GastoFijoController gastoController,
+                             PersonaController personaController) {
+        this.ventaController = ventaController;
+        this.gastoController = gastoController;
+        this.personaController = personaController;
+    }
+
+    public List<Movimiento> obtenerMovimientos() throws SQLException {
+        List<Movimiento> movimientos = new ArrayList<>();
+        movimientos.addAll(ventaController.listar());
+        movimientos.addAll(gastoController.listar());
+        return movimientos;
+    }
+
+    public double calcularIngresos(List<Movimiento> movimientos) {
+        double total = 0;
+        for (Movimiento m : movimientos) {
+            if (m.esIngreso()) {
+                total += m.calcularTotal();
+            }
+        }
+        return total;
+    }
+
+    public double calcularEgresos(List<Movimiento> movimientos) {
+        double total = 0;
+        for (Movimiento m : movimientos) {
+            if (!m.esIngreso()) {
+                total += m.calcularTotal();
+            }
+        }
+        return total;
+    }
+
+    public double calcularCobrado(List<Venta> ventas) {
+        double total = 0;
+        for (Venta v : ventas) {
+            total += v.getMontoPagado();
+        }
+        return total;
+    }
+
+    public double calcularPendiente(List<Venta> ventas) {
+        double total = 0;
+        for (Venta v : ventas) {
+            total += v.calcularDeuda();
+        }
+        return total;
+    }
+
+    public List<IReportable> obtenerPlanilla() throws SQLException {
+        List<IReportable> planilla = new ArrayList<>();
+        for (Persona p : personaController.listar()) {
+            if (p instanceof Empleado) {
+                planilla.add((Empleado) p);
+            }
+        }
+        return planilla;
+    }
+
+    public double sumarReporte(List<IReportable> items) {
+        double total = 0;
+        for (IReportable r : items) {
+            total += r.reporteMonto();
+        }
+        return total;
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/controlador/VentaController.java
+===================================================================
+package controlador;
+
+import modelo.Cliente;
+import modelo.Venta;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class VentaController {
+    private Connection connection;
+
+    private static final String SELECT_BASE =
+            "SELECT v.Codigo_venta, v.Precio, v.Peso, v.Pago_pollo, v.Fecha, "
+            + "p.codigo_persona, p.nombre, p.numero_telefono, p.zona_residencia, p.deuda_total "
+            + "FROM ventas v INNER JOIN personas p ON v.Codigo_Cliente = p.codigo_persona ";
+
+    public VentaController(Connection connection) {
+        this.connection = connection;
+    }
+
+    private Venta construir(ResultSet rs) throws SQLException {
+        Cliente cliente = new Cliente(rs.getString("codigo_persona"), rs.getString("nombre"),
+                rs.getString("numero_telefono"), rs.getString("zona_residencia"), rs.getDouble("deuda_total"));
+        return new Venta(rs.getInt("Codigo_venta"), rs.getString("Fecha"), cliente,
+                rs.getDouble("Peso"), rs.getDouble("Precio"), rs.getDouble("Pago_pollo"));
+    }
+
+    public List<Venta> listar() throws SQLException {
+        List<Venta> lista = new ArrayList<>();
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(SELECT_BASE + "ORDER BY v.Fecha, v.Codigo_venta");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                lista.add(construir(rs));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        return lista;
+    }
+
+    public Venta buscar(int codigoVenta) throws SQLException {
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(SELECT_BASE + "WHERE v.Codigo_venta = ?");
+            ps.setInt(1, codigoVenta);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return construir(rs);
+            }
+            return null;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+
+    public int registrar(Venta venta) throws SQLException {
+        String sql = "INSERT INTO ventas (Precio, Peso, Pago_pollo, Fecha, Codigo_Cliente) VALUES (?, ?, ?, ?, ?)";
+        int filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setDouble(1, venta.getPrecioKg());
+            ps.setDouble(2, venta.getPesoKg());
+            ps.setDouble(3, venta.getMontoPagado());
+            ps.setString(4, venta.getFecha());
+            ps.setString(5, venta.getCliente().getCodigoPersona());
+            filas = ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        if (filas > 0 && venta.calcularDeuda() > 0) {
+            ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
+        }
+        return filas;
+    }
+
+    public int actualizar(Venta venta) throws SQLException {
+        Venta anterior = buscar(venta.getId());
+        if (anterior == null) {
+            return 0;
+        }
+        String sql = "UPDATE ventas SET Precio = ?, Peso = ?, Pago_pollo = ?, Fecha = ?, Codigo_Cliente = ? "
+                + "WHERE Codigo_venta = ?";
+        int filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setDouble(1, venta.getPrecioKg());
+            ps.setDouble(2, venta.getPesoKg());
+            ps.setDouble(3, venta.getMontoPagado());
+            ps.setString(4, venta.getFecha());
+            ps.setString(5, venta.getCliente().getCodigoPersona());
+            ps.setInt(6, venta.getId());
+            filas = ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        if (filas > 0) {
+            ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
+            ajustarDeuda(venta.getCliente().getCodigoPersona(), venta.calcularDeuda());
+        }
+        return filas;
+    }
+
+    public int eliminar(int codigoVenta) throws SQLException {
+        Venta anterior = buscar(codigoVenta);
+        if (anterior == null) {
+            return 0;
+        }
+        String sql = "DELETE FROM ventas WHERE Codigo_venta = ?";
+        int filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setInt(1, codigoVenta);
+            filas = ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+        if (filas > 0) {
+            ajustarDeuda(anterior.getCliente().getCodigoPersona(), -anterior.calcularDeuda());
+        }
+        return filas;
+    }
+
+    private void ajustarDeuda(String codigoCliente, double diferencia) throws SQLException {
+        if (diferencia == 0) {
+            return;
+        }
+        String sql = "UPDATE personas SET deuda_total = GREATEST(deuda_total + ?, 0) WHERE codigo_persona = ?";
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setDouble(1, diferencia);
+            ps.setString(2, codigoCliente);
+            ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/Cliente.java
+===================================================================
+package modelo;
+
+public class Cliente extends Persona {
+    private String zonaResidencia;
+    private double deudaTotal;
+
+    public Cliente(String codigoPersona, String nombre, String numeroTelefono,
+                   String zonaResidencia, double deudaTotal) {
+        super(codigoPersona, nombre, numeroTelefono);
+        this.zonaResidencia = zonaResidencia;
+        this.deudaTotal = deudaTotal;
+    }
+
+    public String getZonaResidencia() {
+        return zonaResidencia;
+    }
+
+    public void setZonaResidencia(String zonaResidencia) {
+        this.zonaResidencia = zonaResidencia;
+    }
+
+    public double getDeudaTotal() {
+        return deudaTotal;
+    }
+
+    public void setDeudaTotal(double deudaTotal) {
+        this.deudaTotal = deudaTotal;
+    }
+
+    public boolean tieneDeuda() {
+        return deudaTotal > 0;
+    }
+
+    @Override
+    public boolean esEmpleado() {
+        return false;
+    }
+
+    @Override
+    public String obtenerResumen() {
+        return "Cliente | Zona: " + zonaResidencia + " | Deuda: S/ " + String.format("%.2f", deudaTotal);
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/Empleado.java
+===================================================================
+package modelo;
+
+public class Empleado extends Persona implements IReportable {
+    private String cargo;
+    private double pagoPorDia;
+    private int diasTrabajados;
+    private double bono;
+
+    public Empleado(String codigoPersona, String nombre, String numeroTelefono,
+                    String cargo, double pagoPorDia, int diasTrabajados, double bono) {
+        super(codigoPersona, nombre, numeroTelefono);
+        this.cargo = cargo;
+        this.pagoPorDia = pagoPorDia;
+        this.diasTrabajados = diasTrabajados;
+        this.bono = bono;
+    }
+
+    public String getCargo() {
+        return cargo;
+    }
+
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
+    }
+
+    public double getPagoPorDia() {
+        return pagoPorDia;
+    }
+
+    public void setPagoPorDia(double pagoPorDia) {
+        this.pagoPorDia = pagoPorDia;
+    }
+
+    public int getDiasTrabajados() {
+        return diasTrabajados;
+    }
+
+    public void setDiasTrabajados(int diasTrabajados) {
+        this.diasTrabajados = diasTrabajados;
+    }
+
+    public double getBono() {
+        return bono;
+    }
+
+    public void setBono(double bono) {
+        this.bono = bono;
+    }
+
+    public double calcularPago() {
+        return diasTrabajados * pagoPorDia + bono;
+    }
+
+    @Override
+    public boolean esEmpleado() {
+        return true;
+    }
+
+    @Override
+    public String obtenerResumen() {
+        return "Empleado | Cargo: " + cargo + " | Dias: " + diasTrabajados
+                + " | Pago/dia: S/ " + String.format("%.2f", pagoPorDia)
+                + " | Bono: S/ " + String.format("%.2f", bono);
+    }
+
+    @Override
+    public String reporteTexto() {
+        return "Planilla " + getNombre() + " (" + cargo + ")";
+    }
+
+    @Override
+    public double reporteMonto() {
+        return calcularPago();
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/GastoFijo.java
+===================================================================
+package modelo;
+
+public class GastoFijo extends Movimiento implements IReportable {
+    private TipoGasto tipo;
+    private double monto;
+
+    public GastoFijo(int id, String fecha, TipoGasto tipo, double monto) {
+        super(id, fecha);
+        this.tipo = tipo;
+        this.monto = monto;
+    }
+
+    public TipoGasto getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(TipoGasto tipo) {
+        this.tipo = tipo;
+    }
+
+    public double getMonto() {
+        return monto;
+    }
+
+    public void setMonto(double monto) {
+        this.monto = monto;
+    }
+
+    @Override
+    public double calcularTotal() {
+        return monto;
+    }
+
+    @Override
+    public boolean esIngreso() {
+        return false;
+    }
+
+    @Override
+    public String obtenerDescripcion() {
+        return "Gasto #" + getId() + " - " + tipo.getNombre();
+    }
+
+    @Override
+    public String reporteTexto() {
+        return "Gasto fijo " + tipo.getNombre();
+    }
+
+    @Override
+    public double reporteMonto() {
+        return monto;
+    }
+
+    public void mostrarGasto() {
+        System.out.println("Id: " + getId() + " | Fecha: " + getFecha()
+                + " | Tipo: " + tipo.getIdTipo() + " - " + tipo.getNombre()
+                + " | Monto: S/ " + String.format("%.2f", monto));
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/IReportable.java
+===================================================================
+package modelo;
+
+public interface IReportable {
+    String reporteTexto();
+    double reporteMonto();
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/Movimiento.java
+===================================================================
+package modelo;
+
+public abstract class Movimiento {
+    private int id;
+    private String fecha;
+
+    public Movimiento(int id, String fecha) {
+        this.id = id;
+        this.fecha = fecha;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
+    }
+
+    public abstract double calcularTotal();
+
+    public abstract boolean esIngreso();
+
+    public abstract String obtenerDescripcion();
+
+    public String mostrarMovimiento() {
+        String signo = esIngreso() ? "+" : "-";
+        return "[" + fecha + "] " + obtenerDescripcion() + " | " + signo + " S/ "
+                + String.format("%.2f", calcularTotal());
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/Persona.java
+===================================================================
+package modelo;
+
+public abstract class Persona {
+    private String codigoPersona;
+    private String nombre;
+    private String numeroTelefono;
+
+    public Persona(String codigoPersona, String nombre, String numeroTelefono) {
+        this.codigoPersona = codigoPersona;
+        this.nombre = nombre;
+        this.numeroTelefono = numeroTelefono;
+    }
+
+    public String getCodigoPersona() {
+        return codigoPersona;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getNumeroTelefono() {
+        return numeroTelefono;
+    }
+
+    public void setNumeroTelefono(String numeroTelefono) {
+        this.numeroTelefono = numeroTelefono;
+    }
+
+    public abstract boolean esEmpleado();
+
+    public abstract String obtenerResumen();
+
+    public void mostrarDatos() {
+        System.out.println("Codigo: " + codigoPersona + " | Nombre: " + nombre
+                + " | Telefono: " + numeroTelefono);
+        System.out.println("   " + obtenerResumen());
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/TipoGasto.java
+===================================================================
+package modelo;
+
+public class TipoGasto {
+    private int idTipo;
+    private String nombre;
+
+    public TipoGasto(int idTipo, String nombre) {
+        this.idTipo = idTipo;
+        this.nombre = nombre;
+    }
+
+    public int getIdTipo() {
+        return idTipo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/modelo/Venta.java
+===================================================================
+package modelo;
+
+public class Venta extends Movimiento implements IReportable {
+    private Cliente cliente;
+    private double pesoKg;
+    private double precioKg;
+    private double montoPagado;
+
+    public Venta(int id, String fecha, Cliente cliente, double pesoKg, double precioKg, double montoPagado) {
+        super(id, fecha);
+        this.cliente = cliente;
+        this.pesoKg = pesoKg;
+        this.precioKg = precioKg;
+        this.montoPagado = montoPagado;
+    }
+
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    public void setCliente(Cliente cliente) {
+        this.cliente = cliente;
+    }
+
+    public double getPesoKg() {
+        return pesoKg;
+    }
+
+    public void setPesoKg(double pesoKg) {
+        this.pesoKg = pesoKg;
+    }
+
+    public double getPrecioKg() {
+        return precioKg;
+    }
+
+    public void setPrecioKg(double precioKg) {
+        this.precioKg = precioKg;
+    }
+
+    public double getMontoPagado() {
+        return montoPagado;
+    }
+
+    public void setMontoPagado(double montoPagado) {
+        this.montoPagado = montoPagado;
+    }
+
+    public double calcularDeuda() {
+        double deuda = calcularTotal() - montoPagado;
+        return deuda > 0 ? deuda : 0;
+    }
+
+    @Override
+    public double calcularTotal() {
+        return pesoKg * precioKg;
+    }
+
+    @Override
+    public boolean esIngreso() {
+        return true;
+    }
+
+    @Override
+    public String obtenerDescripcion() {
+        return "Venta #" + getId() + " a " + cliente.getNombre() + " (" + pesoKg + " kg x S/ " + precioKg + ")";
+    }
+
+    @Override
+    public String reporteTexto() {
+        return "Venta #" + getId() + " - " + cliente.getNombre() + " - cobrado";
+    }
+
+    @Override
+    public double reporteMonto() {
+        return montoPagado;
+    }
+
+    public void mostrarVenta() {
+        System.out.println("Codigo: " + getId() + " | Fecha: " + getFecha()
+                + " | Cliente: " + cliente.getCodigoPersona() + " - " + cliente.getNombre());
+        System.out.println("   Peso: " + pesoKg + " kg | Precio/kg: S/ " + String.format("%.2f", precioKg)
+                + " | Total: S/ " + String.format("%.2f", calcularTotal())
+                + " | Pagado: S/ " + String.format("%.2f", montoPagado)
+                + " | Deuda: S/ " + String.format("%.2f", calcularDeuda()));
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/GastoFijoView.java
+===================================================================
+package vista;
+
+import controlador.GastoFijoController;
+import modelo.GastoFijo;
+import modelo.TipoGasto;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class GastoFijoView extends VistaBase {
+    private GastoFijoController gastoController;
+
+    public GastoFijoView(Lector lector, GastoFijoController gastoController) {
+        super(lector);
+        this.gastoController = gastoController;
+    }
+
+    @Override
+    public void mostrarMenu() throws SQLException {
+        int opcion;
+        do {
+            System.out.println("\n--- GASTOS FIJOS ---");
+            System.out.println("1. Registrar gasto");
+            System.out.println("2. Listar gastos");
+            System.out.println("3. Buscar gasto por id");
+            System.out.println("4. Actualizar gasto");
+            System.out.println("5. Eliminar gasto");
+            System.out.println("0. Regresar");
+            opcion = getLector().leerEntero("Seleccione una opcion: ");
+            switch (opcion) {
+                case 1: registrar(); break;
+                case 2: listar(); break;
+                case 3: buscar(); break;
+                case 4: actualizar(); break;
+                case 5: eliminar(); break;
+                case 0: break;
+                default: System.out.println("Opcion no valida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private TipoGasto pedirTipoGasto() throws SQLException {
+        System.out.println("Tipos de gasto disponibles:");
+        for (TipoGasto t : gastoController.listarTipos()) {
+            System.out.println("   " + t.getIdTipo() + ". " + t.getNombre());
+        }
+        int id = getLector().leerEntero("Id del tipo de gasto: ");
+        TipoGasto tipo = gastoController.buscarTipo(id);
+        if (tipo == null) {
+            System.out.println("No existe el tipo de gasto " + id + ".");
+        }
+        return tipo;
+    }
+
+    private void registrar() throws SQLException {
+        Lector lector = getLector();
+        TipoGasto tipo = pedirTipoGasto();
+        if (tipo == null) {
+            return;
+        }
+        String fecha = lector.leerFecha("Fecha (AAAA-MM-DD): ");
+        double monto = lector.leerDecimal("Monto: ");
+        mostrarResultado(gastoController.registrar(new GastoFijo(0, fecha, tipo, monto)),
+                "Gasto registrado correctamente.");
+    }
+
+    private void listar() throws SQLException {
+        List<GastoFijo> lista = gastoController.listar();
+        if (lista.isEmpty()) {
+            System.out.println("No hay gastos registrados.");
+            return;
+        }
+        System.out.println("\nTotal: " + lista.size() + " gasto(s)");
+        for (GastoFijo g : lista) {
+            g.mostrarGasto();
+        }
+    }
+
+    private void buscar() throws SQLException {
+        int id = getLector().leerEntero("Id del gasto: ");
+        GastoFijo g = gastoController.buscar(id);
+        if (g == null) {
+            System.out.println("No se encontro el gasto " + id + ".");
+        } else {
+            g.mostrarGasto();
+        }
+    }
+
+    private void actualizar() throws SQLException {
+        Lector lector = getLector();
+        int id = lector.leerEntero("Id del gasto a actualizar: ");
+        GastoFijo actual = gastoController.buscar(id);
+        if (actual == null) {
+            System.out.println("No se encontro el gasto " + id + ".");
+            return;
+        }
+        System.out.println("Datos actuales:");
+        actual.mostrarGasto();
+        System.out.println("Ingrese los nuevos datos:");
+        TipoGasto tipo = pedirTipoGasto();
+        if (tipo == null) {
+            return;
+        }
+        actual.setTipo(tipo);
+        actual.setFecha(lector.leerFecha("Fecha (AAAA-MM-DD): "));
+        actual.setMonto(lector.leerDecimal("Monto: "));
+        mostrarResultado(gastoController.actualizar(actual), "Gasto actualizado correctamente.");
+    }
+
+    private void eliminar() throws SQLException {
+        Lector lector = getLector();
+        int id = lector.leerEntero("Id del gasto a eliminar: ");
+        GastoFijo g = gastoController.buscar(id);
+        if (g == null) {
+            System.out.println("No se encontro el gasto " + id + ".");
+            return;
+        }
+        g.mostrarGasto();
+        if (lector.confirmar("Confirma eliminar este gasto?")) {
+            mostrarResultado(gastoController.eliminar(id), "Gasto eliminado correctamente.");
+        } else {
+            System.out.println("Operacion cancelada.");
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/Lector.java
+===================================================================
+package vista;
+
+import java.util.Scanner;
+
+public class Lector {
+    private Scanner sc;
+
+    public Lector(Scanner sc) {
+        this.sc = sc;
+    }
+
+    public int leerEntero(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String texto = sc.nextLine().trim();
+            try {
+                return Integer.parseInt(texto);
+            } catch (NumberFormatException e) {
+                System.out.println("Debe ingresar un numero entero.");
+            }
+        }
+    }
+
+    public int leerEnteroNoNegativo(String mensaje) {
+        while (true) {
+            int valor = leerEntero(mensaje);
+            if (valor >= 0) {
+                return valor;
+            }
+            System.out.println("El valor no puede ser negativo.");
+        }
+    }
+
+    public double leerDecimal(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String texto = sc.nextLine().trim().replace(',', '.');
+            try {
+                double valor = Double.parseDouble(texto);
+                if (valor < 0) {
+                    System.out.println("El valor no puede ser negativo.");
+                } else {
+                    return valor;
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Debe ingresar un numero (ejemplo: 25.50).");
+            }
+        }
+    }
+
+    public String leerTexto(String mensaje) {
+        while (true) {
+            System.out.print(mensaje);
+            String texto = sc.nextLine().trim();
+            if (!texto.isEmpty()) {
+                return texto;
+            }
+            System.out.println("El texto no puede estar vacio.");
+        }
+    }
+
+    public String leerFecha(String mensaje) {
+        while (true) {
+            String texto = leerTexto(mensaje);
+            if (esFechaValida(texto)) {
+                return texto;
+            }
+            System.out.println("Fecha no valida. Use AAAA-MM-DD, con mes de 01 a 12 y un dia que exista en ese mes.");
+        }
+    }
+
+    private boolean esFechaValida(String texto) {
+        if (!texto.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
+            return false;
+        }
+        int anio = Integer.parseInt(texto.substring(0, 4));
+        int mes = Integer.parseInt(texto.substring(5, 7));
+        int dia = Integer.parseInt(texto.substring(8, 10));
+        if (mes < 1 || mes > 12 || dia < 1) {
+            return false;
+        }
+        int[] diasPorMes = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        int maximo = diasPorMes[mes - 1];
+        boolean bisiesto = (anio % 4 == 0 && anio % 100 != 0) || anio % 400 == 0;
+        if (mes == 2 && bisiesto) {
+            maximo = 29;
+        }
+        return dia <= maximo;
+    }
+
+    public boolean confirmar(String mensaje) {
+        String respuesta = leerTexto(mensaje + " (s/n): ");
+        return respuesta.equalsIgnoreCase("s");
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/MainView.java
+===================================================================
+package vista;
+
+import conexion.DatabaseConnector;
+import controlador.GastoFijoController;
+import controlador.PersonaController;
+import controlador.ReporteController;
+import controlador.VentaController;
+
+import java.sql.SQLException;
+import java.util.Scanner;
+
+public class MainView {
+
+    public void ejecutar() {
+        Scanner sc = new Scanner(System.in);
+        Lector lector = new Lector(sc);
+        DatabaseConnector conector = new DatabaseConnector();
+
+        try {
+            conector.abrirConexion();
+            System.out.println("Conexion exitosa a la base de datos ayllu_pollos.");
+        } catch (SQLException e) {
+            System.out.println("No se pudo conectar a la base de datos: " + e.getMessage());
+            sc.close();
+            return;
+        }
+
+        PersonaController personaController = new PersonaController(conector.getConnection());
+        VentaController ventaController = new VentaController(conector.getConnection());
+        GastoFijoController gastoController = new GastoFijoController(conector.getConnection());
+        ReporteController reporteController = new ReporteController(ventaController, gastoController, personaController);
+
+        VistaBase personaView = new PersonaView(lector, personaController);
+        VistaBase ventaView = new VentaView(lector, ventaController, personaController);
+        VistaBase gastoView = new GastoFijoView(lector, gastoController);
+        VistaBase reporteView = new ReporteView(lector, reporteController, ventaController);
+
+        int opcion;
+        do {
+            System.out.println("\n===== AYLLU POLLOS - MENU PRINCIPAL =====");
+            System.out.println("1. Administrar personas (clientes y empleados)");
+            System.out.println("2. Administrar ventas");
+            System.out.println("3. Administrar gastos fijos");
+            System.out.println("4. Reportes");
+            System.out.println("0. Salir");
+            opcion = lector.leerEntero("Seleccione una opcion: ");
+
+            try {
+                switch (opcion) {
+                    case 1: personaView.mostrarMenu(); break;
+                    case 2: ventaView.mostrarMenu(); break;
+                    case 3: gastoView.mostrarMenu(); break;
+                    case 4: reporteView.mostrarMenu(); break;
+                    case 0: System.out.println("Saliendo del sistema..."); break;
+                    default: System.out.println("Opcion no valida.");
+                }
+            } catch (SQLException e) {
+                System.out.println("Error en la base de datos: " + e.getMessage());
+            }
+        } while (opcion != 0);
+
+        conector.cerrarConexion();
+        sc.close();
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/PersonaView.java
+===================================================================
+package vista;
+
+import controlador.PersonaController;
+import modelo.Cliente;
+import modelo.Empleado;
+import modelo.Persona;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class PersonaView extends VistaBase {
+    private PersonaController personaController;
+
+    public PersonaView(Lector lector, PersonaController personaController) {
+        super(lector);
+        this.personaController = personaController;
+    }
+
+    @Override
+    public void mostrarMenu() throws SQLException {
+        int opcion;
+        do {
+            System.out.println("\n--- PERSONAS ---");
+            System.out.println("1. Registrar cliente");
+            System.out.println("2. Registrar empleado");
+            System.out.println("3. Listar personas");
+            System.out.println("4. Buscar por codigo");
+            System.out.println("5. Actualizar persona");
+            System.out.println("6. Eliminar persona");
+            System.out.println("0. Regresar");
+            opcion = getLector().leerEntero("Seleccione una opcion: ");
+            switch (opcion) {
+                case 1: registrar(false); break;
+                case 2: registrar(true); break;
+                case 3: listar(); break;
+                case 4: buscar(); break;
+                case 5: actualizar(); break;
+                case 6: eliminar(); break;
+                case 0: break;
+                default: System.out.println("Opcion no valida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private void registrar(boolean esEmpleado) throws SQLException {
+        Lector lector = getLector();
+        String codigo = lector.leerTexto("Codigo (ejemplo C004 o E004): ");
+        if (personaController.buscar(codigo) != null) {
+            System.out.println("Ya existe una persona con el codigo " + codigo + ".");
+            return;
+        }
+        String nombre = lector.leerTexto("Nombre: ");
+        String telefono = lector.leerTexto("Telefono: ");
+        Persona persona;
+        if (esEmpleado) {
+            String cargo = lector.leerTexto("Cargo: ");
+            double pagoPorDia = lector.leerDecimal("Pago por dia: ");
+            int dias = lector.leerEnteroNoNegativo("Dias trabajados: ");
+            double bono = lector.leerDecimal("Bono: ");
+            persona = new Empleado(codigo, nombre, telefono, cargo, pagoPorDia, dias, bono);
+        } else {
+            String zona = lector.leerTexto("Zona de residencia: ");
+            double deuda = lector.leerDecimal("Deuda inicial: ");
+            persona = new Cliente(codigo, nombre, telefono, zona, deuda);
+        }
+        mostrarResultado(personaController.registrar(persona), "Persona registrada correctamente.");
+    }
+
+    private void listar() throws SQLException {
+        List<Persona> lista = personaController.listar();
+        if (lista.isEmpty()) {
+            System.out.println("No hay personas registradas.");
+            return;
+        }
+        System.out.println("\nTotal: " + lista.size() + " persona(s)");
+        for (Persona p : lista) {
+            p.mostrarDatos();
+        }
+    }
+
+    private void buscar() throws SQLException {
+        String codigo = getLector().leerTexto("Codigo a buscar: ");
+        Persona p = personaController.buscar(codigo);
+        if (p == null) {
+            System.out.println("No se encontro ninguna persona con el codigo " + codigo + ".");
+        } else {
+            p.mostrarDatos();
+        }
+    }
+
+    private void actualizar() throws SQLException {
+        Lector lector = getLector();
+        String codigo = lector.leerTexto("Codigo de la persona a actualizar: ");
+        Persona actual = personaController.buscar(codigo);
+        if (actual == null) {
+            System.out.println("No se encontro ninguna persona con el codigo " + codigo + ".");
+            return;
+        }
+        System.out.println("Datos actuales:");
+        actual.mostrarDatos();
+        System.out.println("Ingrese los nuevos datos:");
+        actual.setNombre(lector.leerTexto("Nombre: "));
+        actual.setNumeroTelefono(lector.leerTexto("Telefono: "));
+        if (actual instanceof Empleado) {
+            Empleado e = (Empleado) actual;
+            e.setCargo(lector.leerTexto("Cargo: "));
+            e.setPagoPorDia(lector.leerDecimal("Pago por dia: "));
+            e.setDiasTrabajados(lector.leerEnteroNoNegativo("Dias trabajados: "));
+            e.setBono(lector.leerDecimal("Bono: "));
+        } else {
+            Cliente c = (Cliente) actual;
+            c.setZonaResidencia(lector.leerTexto("Zona de residencia: "));
+            c.setDeudaTotal(lector.leerDecimal("Deuda total: "));
+        }
+        mostrarResultado(personaController.actualizar(actual), "Persona actualizada correctamente.");
+    }
+
+    private void eliminar() throws SQLException {
+        Lector lector = getLector();
+        String codigo = lector.leerTexto("Codigo de la persona a eliminar: ");
+        Persona p = personaController.buscar(codigo);
+        if (p == null) {
+            System.out.println("No se encontro ninguna persona con el codigo " + codigo + ".");
+            return;
+        }
+        p.mostrarDatos();
+        if (p instanceof Cliente) {
+            int ventas = personaController.contarVentas(codigo);
+            if (ventas > 0) {
+                System.out.println("AVISO: este cliente tiene " + ventas
+                        + " venta(s) registrada(s). Elimine o reasigne sus ventas antes de borrarlo.");
+                return;
+            }
+            if (((Cliente) p).tieneDeuda()) {
+                System.out.println("AVISO: este cliente aun tiene deuda pendiente.");
+            }
+        }
+        if (lector.confirmar("Confirma eliminar a " + p.getNombre() + "?")) {
+            mostrarResultado(personaController.eliminar(codigo), "Persona eliminada correctamente.");
+        } else {
+            System.out.println("Operacion cancelada.");
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/ReporteView.java
+===================================================================
+package vista;
+
+import controlador.ReporteController;
+import controlador.VentaController;
+import modelo.IReportable;
+import modelo.Movimiento;
+import modelo.Venta;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class ReporteView extends VistaBase {
+    private ReporteController reporteController;
+    private VentaController ventaController;
+
+    public ReporteView(Lector lector, ReporteController reporteController, VentaController ventaController) {
+        super(lector);
+        this.reporteController = reporteController;
+        this.ventaController = ventaController;
+    }
+
+    @Override
+    public void mostrarMenu() throws SQLException {
+        int opcion;
+        do {
+            System.out.println("\n--- REPORTES ---");
+            System.out.println("1. Movimientos y ganancia del negocio");
+            System.out.println("2. Planilla de empleados");
+            System.out.println("0. Regresar");
+            opcion = getLector().leerEntero("Seleccione una opcion: ");
+            switch (opcion) {
+                case 1: reporteGanancia(); break;
+                case 2: reportePlanilla(); break;
+                case 0: break;
+                default: System.out.println("Opcion no valida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private void reporteGanancia() throws SQLException {
+        List<Movimiento> movimientos = reporteController.obtenerMovimientos();
+        if (movimientos.isEmpty()) {
+            System.out.println("No hay movimientos registrados.");
+            return;
+        }
+        System.out.println("\nMovimientos del negocio:");
+        for (Movimiento m : movimientos) {
+            System.out.println("   " + m.mostrarMovimiento());
+        }
+        List<Venta> ventas = ventaController.listar();
+        double ingresos = reporteController.calcularIngresos(movimientos);
+        double egresos = reporteController.calcularEgresos(movimientos);
+        double cobrado = reporteController.calcularCobrado(ventas);
+        double pendiente = reporteController.calcularPendiente(ventas);
+        System.out.println();
+        imprimirLinea("Total vendido:", ingresos);
+        imprimirLinea("   - Cobrado:", cobrado);
+        imprimirLinea("   - Pendiente:", pendiente);
+        imprimirLinea("Total gastos fijos:", egresos);
+        imprimirLinea("Ganancia real (caja):", cobrado - egresos);
+        imprimirLinea("Ganancia proyectada:", ingresos - egresos);
+    }
+
+    private void reportePlanilla() throws SQLException {
+        List<IReportable> planilla = reporteController.obtenerPlanilla();
+        if (planilla.isEmpty()) {
+            System.out.println("No hay empleados registrados.");
+            return;
+        }
+        System.out.println("\nPlanilla del mes:");
+        for (IReportable r : planilla) {
+            System.out.println("   " + r.reporteTexto() + ": " + formatoMonto(r.reporteMonto()));
+        }
+        imprimirLinea("Total planilla:", reporteController.sumarReporte(planilla));
+    }
+
+    private void imprimirLinea(String etiqueta, double monto) {
+        System.out.println(String.format("%-24s S/ %10.2f", etiqueta, monto));
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/VentaView.java
+===================================================================
+package vista;
+
+import controlador.PersonaController;
+import controlador.VentaController;
+import modelo.Cliente;
+import modelo.Venta;
+
+import java.sql.SQLException;
+import java.util.List;
+
+public class VentaView extends VistaBase {
+    private VentaController ventaController;
+    private PersonaController personaController;
+
+    public VentaView(Lector lector, VentaController ventaController, PersonaController personaController) {
+        super(lector);
+        this.ventaController = ventaController;
+        this.personaController = personaController;
+    }
+
+    @Override
+    public void mostrarMenu() throws SQLException {
+        int opcion;
+        do {
+            System.out.println("\n--- VENTAS ---");
+            System.out.println("1. Registrar venta");
+            System.out.println("2. Listar ventas");
+            System.out.println("3. Buscar venta por codigo");
+            System.out.println("4. Actualizar venta");
+            System.out.println("5. Eliminar venta");
+            System.out.println("0. Regresar");
+            opcion = getLector().leerEntero("Seleccione una opcion: ");
+            switch (opcion) {
+                case 1: registrar(); break;
+                case 2: listar(); break;
+                case 3: buscar(); break;
+                case 4: actualizar(); break;
+                case 5: eliminar(); break;
+                case 0: break;
+                default: System.out.println("Opcion no valida.");
+            }
+        } while (opcion != 0);
+    }
+
+    private Cliente pedirCliente() throws SQLException {
+        String codigo = getLector().leerTexto("Codigo del cliente: ");
+        Cliente cliente = personaController.buscarCliente(codigo);
+        if (cliente == null) {
+            System.out.println("No existe un cliente con el codigo " + codigo + ".");
+        }
+        return cliente;
+    }
+
+    private double pedirMontoPagado(double total) {
+        while (true) {
+            double pagado = getLector().leerDecimal("Monto pagado: ");
+            if (pagado <= total) {
+                return pagado;
+            }
+            System.out.println("El monto pagado no puede ser mayor al total (" + formatoMonto(total) + ").");
+        }
+    }
+
+    private void registrar() throws SQLException {
+        Lector lector = getLector();
+        Cliente cliente = pedirCliente();
+        if (cliente == null) {
+            return;
+        }
+        String fecha = lector.leerFecha("Fecha (AAAA-MM-DD): ");
+        double peso = lector.leerDecimal("Peso en kg: ");
+        double precio = lector.leerDecimal("Precio por kg: ");
+        double total = peso * precio;
+        System.out.println("Total de la venta: " + formatoMonto(total));
+        double pagado = pedirMontoPagado(total);
+        Venta venta = new Venta(0, fecha, cliente, peso, precio, pagado);
+        int filas = ventaController.registrar(venta);
+        mostrarResultado(filas, "Venta registrada correctamente.");
+        if (filas > 0 && venta.calcularDeuda() > 0) {
+            System.out.println("El cliente queda debiendo " + formatoMonto(venta.calcularDeuda())
+                    + " por esta venta (se sumo a su deuda total).");
+        }
+    }
+
+    private void listar() throws SQLException {
+        List<Venta> lista = ventaController.listar();
+        if (lista.isEmpty()) {
+            System.out.println("No hay ventas registradas.");
+            return;
+        }
+        System.out.println("\nTotal: " + lista.size() + " venta(s)");
+        for (Venta v : lista) {
+            v.mostrarVenta();
+        }
+    }
+
+    private void buscar() throws SQLException {
+        int codigo = getLector().leerEntero("Codigo de la venta: ");
+        Venta v = ventaController.buscar(codigo);
+        if (v == null) {
+            System.out.println("No se encontro la venta " + codigo + ".");
+        } else {
+            v.mostrarVenta();
+        }
+    }
+
+    private void actualizar() throws SQLException {
+        Lector lector = getLector();
+        int codigo = lector.leerEntero("Codigo de la venta a actualizar: ");
+        Venta actual = ventaController.buscar(codigo);
+        if (actual == null) {
+            System.out.println("No se encontro la venta " + codigo + ".");
+            return;
+        }
+        System.out.println("Datos actuales:");
+        actual.mostrarVenta();
+        System.out.println("Ingrese los nuevos datos:");
+        Cliente cliente = pedirCliente();
+        if (cliente == null) {
+            return;
+        }
+        actual.setCliente(cliente);
+        actual.setFecha(lector.leerFecha("Fecha (AAAA-MM-DD): "));
+        actual.setPesoKg(lector.leerDecimal("Peso en kg: "));
+        actual.setPrecioKg(lector.leerDecimal("Precio por kg: "));
+        System.out.println("Nuevo total: " + formatoMonto(actual.calcularTotal()));
+        actual.setMontoPagado(pedirMontoPagado(actual.calcularTotal()));
+        mostrarResultado(ventaController.actualizar(actual), "Venta actualizada correctamente.");
+    }
+
+    private void eliminar() throws SQLException {
+        Lector lector = getLector();
+        int codigo = lector.leerEntero("Codigo de la venta a eliminar: ");
+        Venta v = ventaController.buscar(codigo);
+        if (v == null) {
+            System.out.println("No se encontro la venta " + codigo + ".");
+            return;
+        }
+        v.mostrarVenta();
+        if (lector.confirmar("Confirma eliminar esta venta?")) {
+            mostrarResultado(ventaController.eliminar(codigo), "Venta eliminada correctamente.");
+        } else {
+            System.out.println("Operacion cancelada.");
+        }
+    }
+}
+
+
+===================================================================
+ARCHIVO: src/vista/VistaBase.java
+===================================================================
+package vista;
+
+import java.sql.SQLException;
+
+public abstract class VistaBase {
+    private Lector lector;
+
+    public VistaBase(Lector lector) {
+        this.lector = lector;
+    }
+
+    public Lector getLector() {
+        return lector;
+    }
+
+    public abstract void mostrarMenu() throws SQLException;
+
+    public void mostrarResultado(int filas, String mensajeExito) {
+        if (filas > 0) {
+            System.out.println(mensajeExito);
+        } else {
+            System.out.println("No se realizo ningun cambio.");
+        }
+    }
+
+    public String formatoMonto(double monto) {
+        return "S/ " + String.format("%.2f", monto);
+    }
+}
+
+
+===================================================================
+ARCHIVO: sql/script_ayllu_pollos.sql
+===================================================================
+
+CREATE DATABASE IF NOT EXISTS ayllu_pollos
+    DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE ayllu_pollos;
+
+DROP TABLE IF EXISTS ventas;
+DROP TABLE IF EXISTS gasto_fijo;
+DROP TABLE IF EXISTS tipo_gasto;
+DROP TABLE IF EXISTS personas;
+
+CREATE TABLE personas (
+    codigo_persona   VARCHAR(20)   NOT NULL,
+    nombre           VARCHAR(100)  NOT NULL,
+    numero_telefono  VARCHAR(20)   NOT NULL,
+    es_empleado      TINYINT(1)    NOT NULL,
+    zona_residencia  VARCHAR(100)  DEFAULT NULL,
+    deuda_total      DECIMAL(10,2) DEFAULT NULL,
+    cargo            VARCHAR(50)   DEFAULT NULL,
+    pago_por_dia     DECIMAL(10,2) DEFAULT NULL,
+    dias_trabajados  INT           DEFAULT NULL,
+    bono             DECIMAL(10,2) DEFAULT NULL,
+    PRIMARY KEY (codigo_persona)
+) ENGINE=InnoDB;
+
+CREATE TABLE tipo_gasto (
+    id_tipo  INT         NOT NULL,
+    nombre   VARCHAR(50) NOT NULL,
+    PRIMARY KEY (id_tipo)
+) ENGINE=InnoDB;
+
+CREATE TABLE gasto_fijo (
+    id_gasto  INT           NOT NULL AUTO_INCREMENT,
+    id_tipo   INT           NOT NULL,
+    fecha     DATE          NOT NULL DEFAULT (CURRENT_DATE),
+    monto     DECIMAL(10,2) NOT NULL,
+    PRIMARY KEY (id_gasto),
+    CONSTRAINT fk_gasto_tipo FOREIGN KEY (id_tipo) REFERENCES tipo_gasto (id_tipo)
+) ENGINE=InnoDB;
+
+CREATE TABLE ventas (
+    Codigo_venta    INT           NOT NULL AUTO_INCREMENT,
+    Precio          DECIMAL(10,2) NOT NULL,
+    Peso            DECIMAL(10,2) NOT NULL,
+    Pago_pollo      DECIMAL(10,2) NOT NULL,
+    Fecha           DATE          NOT NULL,
+    Codigo_Cliente  VARCHAR(20)   NOT NULL,
+    PRIMARY KEY (Codigo_venta),
+    CONSTRAINT fk_venta_cliente FOREIGN KEY (Codigo_Cliente) REFERENCES personas (codigo_persona)
+) ENGINE=InnoDB;
+
+INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, zona_residencia, deuda_total) VALUES
+('C001', 'Maria Lopez',  '987654321', 0, 'San Juan de Lurigancho', 0.00),
+('C002', 'Jorge Quispe', '912345678', 0, 'Los Olivos',             50.50),
+('C003', 'Ana Flores',   '923456789', 0, 'Comas',                  120.00);
+
+INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, cargo, pago_por_dia, dias_trabajados, bono) VALUES
+('E001', 'Carlos Mamani', '999111222', 1, 'Vendedor',   60.00, 22, 50.00),
+('E002', 'Rosa Ticona',   '999333444', 1, 'Cajera',     55.00, 20, 30.00),
+('E003', 'Luis Ccopa',    '999555666', 1, 'Repartidor', 50.00, 25,  0.00);
+
+INSERT INTO tipo_gasto (id_tipo, nombre) VALUES
+(1, 'Implementos'),
+(2, 'Combustible y peajes'),
+(3, 'Agua y gas');
+
+INSERT INTO gasto_fijo (id_tipo, fecha, monto) VALUES
+(1, '2026-10-05', 120.50),
+(2, '2026-10-12',  85.00),
+(3, '2026-10-20',  60.00),
+(1, '2026-10-28',  45.90),
+(2, '2026-11-01', 100.00);
+
+INSERT INTO ventas (Precio, Peso, Pago_pollo, Fecha, Codigo_Cliente) VALUES
+(9.50, 20.00, 190.00, '2026-10-30', 'C001'),
+(9.50, 10.00,  44.50, '2026-11-01', 'C002'),
+(9.80, 25.00, 125.00, '2026-11-03', 'C003');

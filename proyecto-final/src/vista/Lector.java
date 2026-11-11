@@ -21,6 +21,16 @@ public class Lector {
         }
     }
 
+    public int leerEnteroNoNegativo(String mensaje) {
+        while (true) {
+            int valor = leerEntero(mensaje);
+            if (valor >= 0) {
+                return valor;
+            }
+            System.out.println("El valor no puede ser negativo.");
+        }
+    }
+
     public double leerDecimal(String mensaje) {
         while (true) {
             System.out.print(mensaje);
@@ -52,11 +62,30 @@ public class Lector {
     public String leerFecha(String mensaje) {
         while (true) {
             String texto = leerTexto(mensaje);
-            if (texto.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            if (esFechaValida(texto)) {
                 return texto;
             }
-            System.out.println("Formato de fecha incorrecto. Use AAAA-MM-DD (ejemplo: 2026-11-15).");
+            System.out.println("Fecha no valida. Use AAAA-MM-DD, con mes de 01 a 12 y un dia que exista en ese mes.");
         }
+    }
+
+    private boolean esFechaValida(String texto) {
+        if (!texto.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}")) {
+            return false;
+        }
+        int anio = Integer.parseInt(texto.substring(0, 4));
+        int mes = Integer.parseInt(texto.substring(5, 7));
+        int dia = Integer.parseInt(texto.substring(8, 10));
+        if (mes < 1 || mes > 12 || dia < 1) {
+            return false;
+        }
+        int[] diasPorMes = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+        int maximo = diasPorMes[mes - 1];
+        boolean bisiesto = (anio % 4 == 0 && anio % 100 != 0) || anio % 400 == 0;
+        if (mes == 2 && bisiesto) {
+            maximo = 29;
+        }
+        return dia <= maximo;
     }
 
     public boolean confirmar(String mensaje) {

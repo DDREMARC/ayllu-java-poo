@@ -34,28 +34,45 @@ public class PersonaController {
     public List<Persona> listar() throws SQLException {
         List<Persona> lista = new ArrayList<>();
         String sql = "SELECT * FROM personas ORDER BY es_empleado, codigo_persona";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            lista.add(construir(rs));
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                lista.add(construir(rs));
+            }
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
         }
-        rs.close();
-        ps.close();
         return lista;
     }
 
     public Persona buscar(String codigo) throws SQLException {
         String sql = "SELECT * FROM personas WHERE codigo_persona = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, codigo);
-        ResultSet rs = ps.executeQuery();
-        Persona persona = null;
-        if (rs.next()) {
-            persona = construir(rs);
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, codigo);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return construir(rs);
+            }
+            return null;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
         }
-        rs.close();
-        ps.close();
-        return persona;
     }
 
     public Cliente buscarCliente(String codigo) throws SQLException {
@@ -67,85 +84,106 @@ public class PersonaController {
     }
 
     public int registrar(Persona persona) throws SQLException {
-        PreparedStatement ps;
-        if (persona.esEmpleado()) {
-            Empleado e = (Empleado) persona;
-            String sql = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, "
-                    + "cargo, pago_por_dia, dias_trabajados, bono) VALUES (?, ?, ?, 1, ?, ?, ?, ?)";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, e.getCodigoPersona());
-            ps.setString(2, e.getNombre());
-            ps.setString(3, e.getNumeroTelefono());
-            ps.setString(4, e.getCargo());
-            ps.setDouble(5, e.getPagoPorDia());
-            ps.setInt(6, e.getDiasTrabajados());
-            ps.setDouble(7, e.getBono());
-        } else {
-            Cliente c = (Cliente) persona;
-            String sql = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, "
-                    + "zona_residencia, deuda_total) VALUES (?, ?, ?, 0, ?, ?)";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, c.getCodigoPersona());
-            ps.setString(2, c.getNombre());
-            ps.setString(3, c.getNumeroTelefono());
-            ps.setString(4, c.getZonaResidencia());
-            ps.setDouble(5, c.getDeudaTotal());
+        PreparedStatement ps = null;
+        try {
+            if (persona.esEmpleado()) {
+                Empleado e = (Empleado) persona;
+                String sql = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, "
+                        + "cargo, pago_por_dia, dias_trabajados, bono) VALUES (?, ?, ?, 1, ?, ?, ?, ?)";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, e.getCodigoPersona());
+                ps.setString(2, e.getNombre());
+                ps.setString(3, e.getNumeroTelefono());
+                ps.setString(4, e.getCargo());
+                ps.setDouble(5, e.getPagoPorDia());
+                ps.setInt(6, e.getDiasTrabajados());
+                ps.setDouble(7, e.getBono());
+            } else {
+                Cliente c = (Cliente) persona;
+                String sql = "INSERT INTO personas (codigo_persona, nombre, numero_telefono, es_empleado, "
+                        + "zona_residencia, deuda_total) VALUES (?, ?, ?, 0, ?, ?)";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, c.getCodigoPersona());
+                ps.setString(2, c.getNombre());
+                ps.setString(3, c.getNumeroTelefono());
+                ps.setString(4, c.getZonaResidencia());
+                ps.setDouble(5, c.getDeudaTotal());
+            }
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
         }
-        int filas = ps.executeUpdate();
-        ps.close();
-        return filas;
     }
 
     public int actualizar(Persona persona) throws SQLException {
-        PreparedStatement ps;
-        if (persona.esEmpleado()) {
-            Empleado e = (Empleado) persona;
-            String sql = "UPDATE personas SET nombre = ?, numero_telefono = ?, cargo = ?, pago_por_dia = ?, "
-                    + "dias_trabajados = ?, bono = ? WHERE codigo_persona = ? AND es_empleado = 1";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, e.getNombre());
-            ps.setString(2, e.getNumeroTelefono());
-            ps.setString(3, e.getCargo());
-            ps.setDouble(4, e.getPagoPorDia());
-            ps.setInt(5, e.getDiasTrabajados());
-            ps.setDouble(6, e.getBono());
-            ps.setString(7, e.getCodigoPersona());
-        } else {
-            Cliente c = (Cliente) persona;
-            String sql = "UPDATE personas SET nombre = ?, numero_telefono = ?, zona_residencia = ?, "
-                    + "deuda_total = ? WHERE codigo_persona = ? AND es_empleado = 0";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, c.getNombre());
-            ps.setString(2, c.getNumeroTelefono());
-            ps.setString(3, c.getZonaResidencia());
-            ps.setDouble(4, c.getDeudaTotal());
-            ps.setString(5, c.getCodigoPersona());
+        PreparedStatement ps = null;
+        try {
+            if (persona.esEmpleado()) {
+                Empleado e = (Empleado) persona;
+                String sql = "UPDATE personas SET nombre = ?, numero_telefono = ?, cargo = ?, pago_por_dia = ?, "
+                        + "dias_trabajados = ?, bono = ? WHERE codigo_persona = ? AND es_empleado = 1";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, e.getNombre());
+                ps.setString(2, e.getNumeroTelefono());
+                ps.setString(3, e.getCargo());
+                ps.setDouble(4, e.getPagoPorDia());
+                ps.setInt(5, e.getDiasTrabajados());
+                ps.setDouble(6, e.getBono());
+                ps.setString(7, e.getCodigoPersona());
+            } else {
+                Cliente c = (Cliente) persona;
+                String sql = "UPDATE personas SET nombre = ?, numero_telefono = ?, zona_residencia = ?, "
+                        + "deuda_total = ? WHERE codigo_persona = ? AND es_empleado = 0";
+                ps = connection.prepareStatement(sql);
+                ps.setString(1, c.getNombre());
+                ps.setString(2, c.getNumeroTelefono());
+                ps.setString(3, c.getZonaResidencia());
+                ps.setDouble(4, c.getDeudaTotal());
+                ps.setString(5, c.getCodigoPersona());
+            }
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
         }
-        int filas = ps.executeUpdate();
-        ps.close();
-        return filas;
     }
 
     public int eliminar(String codigo) throws SQLException {
         String sql = "DELETE FROM personas WHERE codigo_persona = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, codigo);
-        int filas = ps.executeUpdate();
-        ps.close();
-        return filas;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, codigo);
+            return ps.executeUpdate();
+        } finally {
+            if (ps != null) {
+                ps.close();
+            }
+        }
     }
 
     public int contarVentas(String codigoCliente) throws SQLException {
         String sql = "SELECT COUNT(*) AS total FROM ventas WHERE Codigo_Cliente = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, codigoCliente);
-        ResultSet rs = ps.executeQuery();
-        int total = 0;
-        if (rs.next()) {
-            total = rs.getInt("total");
+        ResultSet rs = null;
+        PreparedStatement ps = null;
+        try {
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, codigoCliente);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            return 0;
+        } finally {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
         }
-        rs.close();
-        ps.close();
-        return total;
     }
 }
