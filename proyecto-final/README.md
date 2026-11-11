@@ -24,7 +24,7 @@ lo **pendiente** (una venta al crédito no es plata en caja).
 proyecto-final/
 ├── sql/script_ayllu_pollos.sql     # CREATE DATABASE + tablas + datos iniciales
 └── src/
-    ├── Main.java                   # Solo arranca la vista
+    ├── ProyectoFinalMain.java      # Solo arranca la vista
     ├── conexion/DatabaseConnector.java
     ├── modelo/                     # Representan las filas de las tablas (Lab 9)
     │   ├── Persona (abstracta) → Cliente, Empleado
@@ -127,13 +127,17 @@ La planilla de empleados usa la interfaz `IReportable` (`reporteTexto()` + `repo
 ## ▶️ Cómo ejecutar
 
 1. Iniciar MySQL/MariaDB (XAMPP) y ejecutar `sql/script_ayllu_pollos.sql` en phpMyAdmin.
-2. Agregar el driver `mysql-connector-j-9.x.jar` al proyecto (File → Project Structure → Libraries).
-3. Si el usuario o la clave de MySQL son distintos a `root` / vacío, cambiarlos en `conexion/DatabaseConnector.java`.
-4. Ejecutar `Main.java`.
+2. Si el usuario o la clave de MySQL no son `root` / vacío, cambiarlos en `src/conexion/DatabaseConnector.java`.
+3. Hacer doble clic en `ejecutar.bat`. Compila todo y arranca el programa. El driver ya viene en `lib/`.
 
-Por consola (desde `proyecto-final/`):
+Por consola:
 
 ```bash
-javac -d out $(find src -name "*.java")
-java -cp "out;ruta/al/mysql-connector-j-9.3.0.jar" Main
+javac -encoding UTF-8 -cp "lib/*" -d out $(find src -name "*.java")
+java -cp "out;lib/*" ProyectoFinalMain
 ```
+
+### Si lo abres en IntelliJ
+
+El repositorio tiene otras clases `Main` de los labs 9 a 11 en el paquete por defecto. Por eso la clase principal de este proyecto se llama `ProyectoFinalMain` y no `Main`: así no choca con ellas ("duplicate class: Main").
+Para correrlo desde IntelliJ: clic derecho en `proyecto-final/src` → Mark Directory as → Sources Root, agregar `lib/mysql-connector-j-9.3.0.jar` como librería y ejecutar `ProyectoFinalMain`.
